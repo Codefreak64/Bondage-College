@@ -11,14 +11,14 @@ var InventoryItemArmsInflatableStraightLeotardOptions = [
 	{
 		Name: "Inflated",
 		Property: {
-			Type: null,
+			Type: "Inflated",
 			Effect: null,
 		},
     },
     {
 		Name: "Bloated",
 		Property: {
-			Type: null,
+			Type: "Bloated",
 			Effect: null,
         },
         
@@ -26,7 +26,7 @@ var InventoryItemArmsInflatableStraightLeotardOptions = [
     {
         Name: "Max",
         Property: {
-            Type: null,
+            Type: "Max",
             Effect: null,
         },
     },
