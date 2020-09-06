@@ -312,7 +312,6 @@ Glasses,Glasses5,Style 5
 Glasses,Glasses6,Style 6
 Glasses,SunGlasses1,Sunglasses 1
 Glasses,SunGlasses2,Sunglasses 2
-Glasses,ScubaMask,Scuba Mask
 Glasses,EyePatch1,Eye Patch
 Mask,,Mask
 Mask,VenetianMask,Venetian Mask
@@ -951,6 +950,7 @@ ItemHead,RopeBlindfold,Rope Blindfold
 ItemHead,SleepMask,Smooth Sleep Mask
 ItemHead,PrisonLockdownBlindfold,Prison Lockdown Blindfold
 ItemHead,Pantyhose,Pantyhose
+ItemHead,Snorkel,Snorkel
 ItemNose,,Nose
 ItemNose,NoseHook,Nose Hook
 ItemNose,NoseRing,Nose Ring
