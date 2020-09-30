@@ -23,6 +23,7 @@ TextArea {
 .ChatMessage {
 	position: relative;
 	padding-left: 0.4em;
+	overflow: hidden;
 }
 .ChatMessage::before {
 	content: attr(data-time);
@@ -89,11 +90,14 @@ TextArea {
 	text-shadow: none;
 	font-weight: bold;
 }
-#TextAreaChatLog[data-coloractions=false] .ChatMessageAction {
+#TextAreaChatLog[data-coloractions=false] .ChatMessageAction,
+#TextAreaChatLog[data-coloremotes=false] .ChatMessageEmote,
+#TextAreaChatLog[data-coloractivities=false] .ChatMessageActivity {
 	background-color: transparent !important;
 }
-#TextAreaChatLog[data-coloremotes=false] .ChatMessageEmote {
-	background-color: transparent !important;
+#TextAreaChatLog[data-whitespace=preserve] {
+	white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 #FriendList {
 	border: 2px solid white;

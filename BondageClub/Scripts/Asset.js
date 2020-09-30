@@ -9,6 +9,10 @@ var Pose = [];
  * @typedef {Object} Layer
  * @property {string | null} Name - the name of the layer - may be null if the asset only contains a single default layer
  * @property {boolean} AllowColorize - whether or not this layer can be colored
+ * @property {string | null} CopyLayerColor - if not null, specifies that this layer should always copy the color of the named layer
+ * @property {string} [ColorGroup] - specifies the name of a color group that this layer belongs to. Any layers within the same color group
+ * can be colored together via the item color UI
+ * @property {boolean} HideColoring - whether or not this layer can be coloured in the colouring UI
  * @property {string[] | null} AllowTypes - A list of allowed extended item types that this layer permits - the layer will only be drawn if
  * the item type matches one of these types. If null, the layer is considered to permit all extended types.
  * @property {boolean} HasType - whether or not the layer has separate assets per type. If not, the extended type will not be included in
@@ -17,8 +21,21 @@ var Pose = [];
  * undefined, the layer inherits its parent group from it's asset/group.
  * @property {string[] | null} OverrideAllowPose - An array of poses that this layer permits. If set, it will override the poses permitted
  * by the parent asset/group.
- * @property {number} Priority - The drawing priority of this layer. Inherited from the parent asset/group if not specified in the layer definition.
+ * @property {number} Priority - The drawing priority of this layer. Inherited from the parent asset/group if not specified in the layer
+ * definition.
  * @property {Asset} Asset - The asset that this layer belongs to
+ * @property {number} ColorIndex - The coloring index for this layer
+ */
+
+/**
+ * An object defining a group of alpha masks to be applied when drawing an asset layer
+ * @typedef AlphaDefinition
+ * @property {string[]} [Group] - A list of the group names that the given alpha masks should be applied to. If empty or not present, the
+ * alpha masks will be applied to every layer underneath the present one.
+ * @property {string[]} [Pose] - A list of the poses that the given alpha masks should be applied to. If empty or not present, the alpha
+ * masks will be applied regardless of character pose.
+ * @property {number[][]} Masks - A list of alpha mask definitions. A definition is a 4-tuple of numbers defining the top left coordinate of
+ * a rectangle and the rectangle's width and height - e.g. [left, top, width, height]
  */
 
 // Adds a new asset group to the main list
@@ -34,7 +51,6 @@ function AssetGroupAdd(NewAssetFamily, NewAsset) {
 		AllowNone: (NewAsset.AllowNone == null) ? true : NewAsset.AllowNone,
 		AllowColorize: (NewAsset.AllowColorize == null) ? true : NewAsset.AllowColorize,
 		AllowCustomize: (NewAsset.AllowCustomize == null) ? true : NewAsset.AllowCustomize,
-		KeepNaked: (NewAsset.KeepNaked == null) ? false : NewAsset.KeepNaked,
 		ColorSchema: (NewAsset.Color == null) ? ["Default"] : NewAsset.Color,
 		ParentSize: (NewAsset.ParentSize == null) ? "" : NewAsset.ParentSize,
 		ParentColor: (NewAsset.ParentColor == null) ? "" : NewAsset.ParentColor,
@@ -86,6 +102,7 @@ function AssetAdd(NewAsset) {
 		Require: NewAsset.Require,
 		SetPose: (NewAsset.SetPose == null) ? AssetCurrentGroup.SetPose : NewAsset.SetPose,
 		AllowPose: (NewAsset.AllowPose == null) ? AssetCurrentGroup.AllowPose : NewAsset.AllowPose,
+		AllowActivePose: (NewAsset.AllowActivePose == null) ? AssetCurrentGroup.AllowActivePose : NewAsset.AllowActivePose,
 		Value: (NewAsset.Value == null) ? 0 : NewAsset.Value,
 		Difficulty: (NewAsset.Difficulty == null) ? 0 : NewAsset.Difficulty,
 		SelfBondage: (NewAsset.SelfBondage == null) ? 0 : NewAsset.SelfBondage,
@@ -130,11 +147,18 @@ function AssetAdd(NewAsset) {
 		DynamicName: (typeof NewAsset.DynamicName === 'function') ? NewAsset.DynamicName : function () { return this.Name },
 		DynamicGroupName: (NewAsset.DynamicGroupName || AssetCurrentGroup.Name),
 		DynamicActivity: (typeof NewAsset.DynamicActivity === 'function') ? NewAsset.DynamicActivity : function () { return NewAsset.Activity },
+		DynamicAudio: (typeof NewAsset.DynamicAudio === 'function') ? NewAsset.DynamicAudio : null,
 		CharacterRestricted: typeof NewAsset.CharacterRestricted === 'boolean' ? NewAsset.CharacterRestricted : false,
 		AllowRemoveExclusive: typeof NewAsset.AllowRemoveExclusive === 'boolean' ? NewAsset.CharacterRestricted : false,
-		InheritColor: NewAsset.InheritColor
+		InheritColor: NewAsset.InheritColor,
+		DynamicBeforeDraw: (typeof NewAsset.DynamicBeforeDraw === 'boolean') ? NewAsset.DynamicBeforeDraw : false,
+		DynamicAfterDraw: (typeof NewAsset.DynamicAfterDraw === 'boolean') ? NewAsset.DynamicAfterDraw : false,
+		DynamicScriptDraw: (typeof NewAsset.DynamicScriptDraw === 'boolean') ? NewAsset.DynamicScriptDraw : false,
+		HasType: (typeof NewAsset.HasType === 'boolean') ? NewAsset.HasType : true,
+		AllowColorizeAll: typeof NewAsset.AllowColorizeAll === 'boolean' ? NewAsset.AllowColorizeAll : true,
 	}
 	A.Layer = AssetBuildLayer(NewAsset, A);
+	AssetAssignColorIndices(A);
 	// Unwearable assets are not visible but can be overwritten
 	if (!A.Wear && NewAsset.Visible != true) A.Visible = false;
 	Asset.push(A);
@@ -149,7 +173,7 @@ function AssetAdd(NewAsset) {
  */
 function AssetBuildLayer(AssetDefinition, A) {
 	var Layers = Array.isArray(AssetDefinition.Layer) ? AssetDefinition.Layer : [{}];
-	return Layers.map(Layer => AssetMapLayer(Layer, AssetDefinition, A));
+	return Layers.map((Layer, I) => AssetMapLayer(Layer, AssetDefinition, A, I));
 }
 
 /**
@@ -157,19 +181,27 @@ function AssetBuildLayer(AssetDefinition, A) {
  * @param {Object} Layer - The raw layer definition
  * @param {Object} AssetDefinition - The raw asset definition
  * @param {Asset} A - The built asset
+ * @param {number} I - The index of the layer within the asset
  * @return {Layer} - A Layer object representing the drawable properties of the given layer
  */
-function AssetMapLayer(Layer, AssetDefinition, A) {
+function AssetMapLayer(Layer, AssetDefinition, A, I) {
 	return {
 		Name: Layer.Name || null,
 		AllowColorize: AssetLayerAllowColorize(Layer, AssetDefinition),
+		CopyLayerColor: Layer.CopyLayerColor || null,
+		ColorGroup: Layer.ColorGroup,
+		HideColoring: typeof Layer.HideColoring === "boolean" ? Layer.HideColoring : false,
 		AllowTypes: Array.isArray(Layer.AllowTypes) ? Layer.AllowTypes : null,
-		HasType: typeof Layer.HasType === "boolean" ? Layer.HasType : true,
+		HasType: typeof Layer.HasType === "boolean" ? Layer.HasType : A.HasType,
 		ParentGroupName: Layer.ParentGroup,
 		OverrideAllowPose: Array.isArray(Layer.OverrideAllowPose) ? Layer.OverrideAllowPose : null,
 		Priority: Layer.Priority || AssetDefinition.Priority || AssetCurrentGroup.DrawingPriority,
 		InheritColor: Layer.InheritColor,
-		Asset: A
+		Alpha: AssetLayerAlpha(Layer, AssetDefinition, I),
+		Asset: A,
+		DrawingLeft: Layer.Left,
+		DrawingTop: Layer.Top,
+		HideAs: Layer.HideAs,
 	};
 }
 
@@ -180,10 +212,49 @@ function AssetMapLayer(Layer, AssetDefinition, A) {
  * @return {boolean} - Whether or not the layer should be permit colors
  */
 function AssetLayerAllowColorize(Layer, NewAsset) {
-	return typeof Layer.AllowColorize === 'boolean' ? Layer.AllowColorize
-		   : typeof NewAsset.AllowColorize === 'boolean' ? NewAsset.AllowColorize
-			 : typeof AssetCurrentGroup.AllowColorize  === 'boolean' ? AssetCurrentGroup.AllowColorize
-			   : true;
+	return typeof Layer.AllowColorize === "boolean" ? Layer.AllowColorize :
+		typeof NewAsset.AllowColorize === "boolean" ? NewAsset.AllowColorize :
+			typeof AssetCurrentGroup.AllowColorize === "boolean" ? AssetCurrentGroup.AllowColorize : true;
+}
+
+/**
+ * Builds the alpha mask definitions for a layer, based on the
+ * @param {Object} Layer - The raw layer definition
+ * @param {Object} NewAsset - The raw asset definition
+ * @param {number} I - The index of the layer within its asset
+ * @return {AlphaDefinition[]} - a list of alpha mask definitions for the layer
+ */
+function AssetLayerAlpha(Layer, NewAsset, I) {
+	var Alpha = Layer.Alpha || [];
+	// If the layer is the first layer for an asset, add the asset's alpha masks
+	if (I === 0 && NewAsset.Alpha && NewAsset.Alpha.length) {
+		Array.prototype.push.apply(Alpha, NewAsset.Alpha);
+	}
+	return Alpha;
+}
+
+/**
+ * Assigns colour indices to the layers of an asset. These determine which colours get applied to the layer. Also adds a count of colorable
+ * layers to the asset definition.
+ * @param {Object} A - The built asset
+ * @returns {void} - Nothing
+ */
+function AssetAssignColorIndices(A) {
+	var colorIndex = 0;
+	var colorMap = {};
+	A.Layer.forEach(Layer => {
+		// If the layer can't be coloured, we don't need to set a color index
+		if (!Layer.AllowColorize) return;
+
+		var LayerKey = Layer.CopyLayerColor || Layer.Name;
+		if (typeof colorMap[LayerKey] === "number") {
+			Layer.ColorIndex = colorMap[LayerKey];
+		} else {
+			Layer.ColorIndex = colorMap[LayerKey] = colorIndex;
+			colorIndex++;
+		}
+	});
+	A.ColorableLayerCount = colorIndex;
 }
 
 // Builds the asset description from the CSV file
@@ -195,7 +266,7 @@ function AssetBuildDescription(Family, CSV) {
 		if (Asset[A].Group.Family == Family) {
 
 			// Checks if the group matches
-			if ((CSV[L][0] != null) && (CSV[L][0].trim() != "") && (Asset[A].Group.Name == CSV[L][0].trim())) {
+			if ((CSV[L] != null) && (CSV[L][0] != null) && (CSV[L][0].trim() != "") && (Asset[A].Group.Name == CSV[L][0].trim())) {
 
 				// If we must put the group description
 				if (((CSV[L][1] == null) || (CSV[L][1].trim() == "")) && ((CSV[L][2] != null) && (CSV[L][2].trim() != ""))) {

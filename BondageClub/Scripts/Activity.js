@@ -19,30 +19,49 @@ function ActivityAllowed() { return ((CurrentScreen == "ChatRoom") || ((CurrentS
  * @return {void} - Nothing
  */
 function ActivityDictionaryLoad() {
-	if (ActivityDictionary == null) {
 
-		// Tries to read it from cache first
-		var FullPath = "Screens/Character/Preference/ActivityDictionary.csv";
-		if (CommonCSVCache[FullPath]) {
-			ActivityDictionary = CommonCSVCache[FullPath];
-			return;
-		}
-
+	// Tries to read it from cache first
+	var FullPath = "Screens/Character/Preference/ActivityDictionary.csv";
+	var TranslationPath = FullPath.replace(".csv", "_" + TranslationLanguage + ".txt");
+	
+	if (CommonCSVCache[FullPath]) {
+		ActivityDictionary = JSON.parse(JSON.stringify(CommonCSVCache[FullPath]));
+	} else {
 		// Opens the file, parse it and returns the result in an object
 		CommonGet(FullPath, function () {
 			if (this.status == 200) {
 				CommonCSVCache[FullPath] = CommonParseCSV(this.responseText);
-				ActivityDictionary = CommonCSVCache[FullPath];
+				ActivityDictionary = JSON.parse(JSON.stringify(CommonCSVCache[FullPath]));
 			}
 		});
+	}
+	
+	// If a translation file is available, we open the txt file and keep it in cache
+	if (TranslationAvailable(TranslationPath)) 
+		CommonGet(TranslationPath, function () {
+			if (this.status == 200) {
+				TranslationCache[TranslationPath] = TranslationParseTXT(this.responseText);
+				ActivityTranslate(TranslationPath);
+			}
+		});
+		
+	ActivityTranslate(TranslationPath);
+}
 
-		// If a translation file is available, we open the txt file and keep it in cache
-		var TranslationPath = FullPath.replace(".csv", "_" + TranslationLanguage + ".txt");
-		if (TranslationAvailable(TranslationPath))
-			CommonGet(TranslationPath, function () {
-				if (this.status == 200) TranslationCache[TranslationPath] = TranslationParseTXT(this.responseText);
-			});
-
+/**
+ * Translates the activity dictionary.
+ * @param {string} CachePath - Path to the language cache. 
+ */
+function ActivityTranslate(CachePath) { 
+	if (!Array.isArray(TranslationCache[CachePath])) return;
+	
+	for (let T = 0; T < ActivityDictionary.length; T++) { 
+		if (ActivityDictionary[T][1]) {
+			let indexText = TranslationCache[CachePath].indexOf(ActivityDictionary[T][1].trim());
+			if (indexText >= 0) {
+				ActivityDictionary[T][1] = TranslationCache[CachePath][indexText + 1];
+			}
+		}
 	}
 }
 
@@ -242,7 +261,7 @@ function ActivityOrgasmWillpowerProgress(C) {
  * @returns {void} - Nothing
  */
 function ActivityOrgasmStart(C) {
-	if ((C.ID == 0) || (C.AccountName.substring(0, 4) == "NPC_") || (C.AccountName.substring(0, 4) == "NPC-")) {
+	if ((C.ID == 0) || C.IsNpc()) {
 		if (C.ID == 0) ActivityOrgasmGameResistCount = 0;
 		ActivityOrgasmWillpowerProgress(C);
 		C.ArousalSettings.OrgasmTimer = CurrentTime + (Math.random() * 10000) + 5000;
@@ -265,7 +284,7 @@ function ActivityOrgasmStart(C) {
  * @returns {void} - Nothing
  */
 function ActivityOrgasmStop(C, Progress) {
-	if ((C.ID == 0) || (C.AccountName.substring(0, 4) == "NPC_") || (C.AccountName.substring(0, 4) == "NPC-")) {
+	if ((C.ID == 0) || C.IsNpc()) {
 		ActivityOrgasmWillpowerProgress(C);
 		C.ArousalSettings.OrgasmTimer = 0;
 		C.ArousalSettings.OrgasmStage = 0;
@@ -314,7 +333,12 @@ function ActivityOrgasmGameGenerate(Progress) {
  * @returns {void} - Nothing
  */
 function ActivityOrgasmPrepare(C) {
-	if ((C.ID == 0) || (C.AccountName.substring(0, 4) == "NPC_") || (C.AccountName.substring(0, 4) == "NPC-")) {
+	if (C.IsEdged()) {
+		C.ArousalSettings.Progress = 95;
+		return;
+	}
+
+	if ((C.ID == 0) || C.IsNpc()) {
 
 		// Starts the timer and exits from dialog if necessary
 		C.ArousalSettings.OrgasmTimer = (C.ID == 0) ? CurrentTime + 5000 : CurrentTime + (Math.random() * 10000) + 5000;
@@ -324,7 +348,7 @@ function ActivityOrgasmPrepare(C) {
 		ActivityChatRoomArousalSync(C);
 
 		// If an NPC orgasmed, it will raise her love based on the horny trait
-		if ((C.AccountName.substring(0, 4) == "NPC_") || (C.AccountName.substring(0, 4) == "NPC-"))
+		if (C.IsNpc())
 			if ((C.Love == null) || (C.Love < 60) || (C.IsOwner()) || (C.IsOwnedByPlayer()) || C.IsLoverPrivate())
 				NPCLoveChange(C, Math.floor((NPCTraitGet(C, "Horny") + 100) / 20) + 1);
 
@@ -429,7 +453,7 @@ function ActivityRun(C, Activity) {
 
 	// If the player does the activity on herself or an NPC, we calculate the result right away
 	if ((C.ArousalSettings.Active == "Hybrid") || (C.ArousalSettings.Active == "Automatic"))
-		if ((C.ID == 0) || (C.AccountName.substring(0, 4) == "NPC_") || (C.AccountName.substring(0, 4) == "NPC-"))
+		if ((C.ID == 0) || C.IsNpc())
 			ActivityEffect(Player, C, Activity, C.FocusGroup.Name);
 
 	// If the player does the activity on someone else, we calculate the progress for the player right away
@@ -465,7 +489,7 @@ function ActivityArousalItem(Source, Target, Asset) {
 	if (AssetActivity != null) {
 		var Activity = AssetGetActivity(Target.AssetFamily, AssetActivity);
 		if ((Source.ID == 0) && (Target.ID != 0)) ActivityRunSelf(Source, Target, Activity);
-		if (((Target.ArousalSettings != null) && ((Target.ArousalSettings.Active == "Hybrid") || (Target.ArousalSettings.Active == "Automatic"))) && ((Target.ID == 0) || (Target.AccountName.substring(0, 4) == "NPC_") || (Target.AccountName.substring(0, 4) == "NPC-")))
+		if (((Target.ArousalSettings != null) && ((Target.ArousalSettings.Active == "Hybrid") || (Target.ArousalSettings.Active == "Automatic"))) && ((Target.ID == 0) || (Target.IsNpc())))
 			ActivityEffect(Source, Target, AssetActivity, Asset.Group.Name);
 	}
 }

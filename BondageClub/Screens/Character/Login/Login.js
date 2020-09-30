@@ -23,7 +23,7 @@ var LoginFrameTotalTime = 0;*/
  */
 function LoginDoNextThankYou() {
 	LoginThankYou = CommonRandomItemFromList(LoginThankYou, LoginThankYouList);
-	CharacterRelease(Player);
+	CharacterRelease(Player, false);
 	CharacterAppearanceFullRandom(Player);
 	CharacterFullRandomRestrain(Player);
 	LoginThankYouNext = CommonTime() + 4000;
@@ -143,15 +143,21 @@ function LoginRun() {
 function LoginValidCollar() {
  	if ((InventoryGet(Player, "ItemNeck") != null) && (InventoryGet(Player, "ItemNeck").Asset.Name == "SlaveCollar") && (Player.Owner == "")) {
  		InventoryRemove(Player, "ItemNeck");
-		InventoryRemove(Player, "ItemNeckAccessories");
-		InventoryRemove(Player, "ItemNeckRestraints");
+		if (CurrentScreen == "ChatRoom") {
+			ChatRoomCharacterItemUpdate(Player, "ItemNeck");
+			ChatRoomCharacterItemUpdate(Player, "ItemNeckAccessories");
+			ChatRoomCharacterItemUpdate(Player, "ItemNeckRestraints");
+		}
 	}
- 	if ((InventoryGet(Player, "ItemNeck") != null) && (InventoryGet(Player, "ItemNeck").Asset.Name != "SlaveCollar") && (InventoryGet(Player, "ItemNeck").Asset.Name != "ClubSlaveCollar") && (Player.Owner != "")) {
- 		InventoryRemove(Player, "ItemNeck");
-	}
-	if ((InventoryGet(Player, "ItemNeck") == null) && (Player.Owner != "")) {
-		InventoryWear(Player, "SlaveCollar", "ItemNeck");
-		if (CurrentScreen == "ChatRoom") ChatRoomCharacterItemUpdate(Player, "ItemNeck");
+	if (!LogQuery("ReleasedCollar", "OwnerRule")) {
+		if ((InventoryGet(Player, "ItemNeck") != null) && (InventoryGet(Player, "ItemNeck").Asset.Name != "SlaveCollar") && (InventoryGet(Player, "ItemNeck").Asset.Name != "ClubSlaveCollar") && (Player.Owner != "")) {
+			InventoryRemove(Player, "ItemNeck");
+			if (CurrentScreen == "ChatRoom") ChatRoomCharacterItemUpdate(Player, "ItemNeck");
+		}
+		if ((InventoryGet(Player, "ItemNeck") == null) && (Player.Owner != "")) {
+			InventoryWear(Player, "SlaveCollar", "ItemNeck");
+			if (CurrentScreen == "ChatRoom") ChatRoomCharacterItemUpdate(Player, "ItemNeck");
+		}
 	}
 }
 
@@ -192,16 +198,16 @@ function LoginStableItems() {
 		InventoryAdd(Player, "HarnessPonyBits", "ItemMouth3", false);
 		InventoryAdd(Player, "PonyBoots", "Shoes", false);
 		InventoryAdd(Player, "PonyBoots", "ItemBoots", false);
-		InventoryAdd(Player,"PonyHood", "ItemHood", false);
-		InventoryAdd(Player,"HoofMittens", "ItemHands", false);
+		InventoryAdd(Player, "PonyHood", "ItemHood", false);
+		InventoryAdd(Player, "HoofMittens", "ItemHands", false);
 	} else {
 		InventoryDelete(Player, "HarnessPonyBits", "ItemMouth", false);
 		InventoryDelete(Player, "HarnessPonyBits", "ItemMouth2", false);
 		InventoryDelete(Player, "HarnessPonyBits", "ItemMouth3", false);
 		InventoryDelete(Player, "PonyBoots", "Shoes", false);
 		InventoryDelete(Player, "PonyBoots", "ItemBoots", false);
-		InventoryDelete(Player, "PonyHood", "ItemHood",false)
-		InventoryDelete(Player,"HoofMittens", "ItemHands", false);
+		InventoryDelete(Player, "PonyHood", "ItemHood", false)
+		InventoryDelete(Player, "HoofMittens", "ItemHands", false);
 	}
 }
 
@@ -343,6 +349,8 @@ function LoginResponse(C) {
 			Player.AudioSettings = C.AudioSettings;
 			Player.GameplaySettings = C.GameplaySettings;
 			Player.ArousalSettings = C.ArousalSettings;
+			Player.OnlineSettings = C.OnlineSettings;
+			Player.OnlineSharedSettings = C.OnlineSharedSettings;
 			Player.WhiteList = ((C.WhiteList == null) || !Array.isArray(C.WhiteList)) ? [] : C.WhiteList;
 			Player.BlackList = ((C.BlackList == null) || !Array.isArray(C.BlackList)) ? [] : C.BlackList;
 			Player.FriendList = ((C.FriendList == null) || !Array.isArray(C.FriendList)) ? [] : C.FriendList;
@@ -408,7 +416,7 @@ function LoginResponse(C) {
 						InventoryRemove(Player, "ItemFeet");
 						InventoryRemove(Player, "ItemLegs");
 						Player.Cage = true;
-						CharacterSetActivePose(Player, "Kneel");
+						CharacterSetActivePose(Player, "Kneel", true);
 						CommonSetScreen("Room", "Private");
 					} else {
 						CommonSetScreen("Room", "MainHall");
@@ -466,6 +474,7 @@ function LoginClick() {
 	if ((MouseX >= 1025) && (MouseX <= 1225) && (MouseY >= 500) && (MouseY <= 560)) {
 		TranslationNextLanguage();
 		TextLoad();
+		ActivityDictionaryLoad();
 		AssetLoadDescription("Female3DCG");
 		LoginUpdateMessage();
 	}
