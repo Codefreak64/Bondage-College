@@ -905,6 +905,7 @@ var AssetFemale3DCG = [
 			{ Name: "AngelWings", Value: 50 },
 			{ Name: "BatWings", Value: 20 },
 			{ Name: "FairyWings", Value: 50 },
+			{ Name: "CrystalWings", Value: 50 },
 		],
 		Color: ["Default"]
 	},
