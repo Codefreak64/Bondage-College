@@ -3714,7 +3714,6 @@ var AssetFemale3DCG = [
 					{ Name: "Strap", Priority: 52 }
 				]
 			},
-
 			{ 
 				Name: "PetBed", Fetish: ["Pet"], Value: 50, Difficulty: -25, SelfBondage: 0, Time: 5, RemoveTime: 5, Effect: ["ForceKneel", "IsChained"], RemoveAtLogin: true, Prerequisite: ["NotSuspended", "NoFeetSpreader"], Hide: ["NeckRestraints"], HideItem: ["ItemBootsPonyBoots", "ItemBootsBalletHeels", "ItemBootsBalletWedges", "ItemBootsThighHighLatexHeels"], AllowPose: ["Kneel", "AllFours","Hogtied"], 
 				Layer: [
@@ -3724,8 +3723,6 @@ var AssetFemale3DCG = [
 					]}]}
 				],
 			},
-			{ Name: "TransportWoodenBox", Value: 60, Difficulty: -2, SelfBondage: 5, Time: 15, RemoveTime: 10, AllowLock: true, Audio: "LockLarge", Prerequisite: ["NotSuspended", "NotHogtied"], Effect: ["Prone", "Enclose", "BlindNormal", "GagLight", "Freeze", "Leash"], Alpha: [{ Masks: [[1, 1, 70, 999], [420, 1, 80, 999]] }], RemoveAtLogin: true, SetPose: ["BaseLower"], Layer: [
-
 			{ Name: "TransportWoodenBox", Value: 60, Difficulty: -2, SelfBondage: 5, Time: 15, RemoveTime: 10, AllowLock: true, Audio: "LockLarge", Prerequisite: ["NotSuspended", "NotHogtied"], Effect: ["Prone", "Enclose", "BlindNormal", "GagLight", "Freeze", "Leash"], HideItem: ["ShoesFlippers"],  Alpha: [{ Masks: [[1, 1, 70, 999], [420, 1, 80, 999]] }], RemoveAtLogin: true, SetPose: ["BaseLower"], Layer: [
 				{ Name: "Box" },
 				{ Name: "Wheelholders" },
