@@ -31,7 +31,7 @@ function ChatSearchLoad() {
 	ElementCreateInput("InputSearch", "text", "", "20");
 	ChatSearchQuery();
 	ChatSearchMessage = "";
-	
+	CommonNotificationReset("Chat");
 }
 
 /**
@@ -416,7 +416,7 @@ function ChatSearchResultResponse(data) {
 					Description: ChatRoomDesc.trim(),
 					Background: Player.LastChatRoomBG,
 					Private: Player.LastChatRoomPrivate,
-					Space: "",
+					Space: ChatRoomSpace,
 					Game: "",
 					Admin: [Player.MemberNumber],
 					Limit: ("" + Math.min(Math.max(Player.LastChatRoomSize, 2), 10)).trim(),
