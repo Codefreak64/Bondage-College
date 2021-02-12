@@ -3847,7 +3847,7 @@ var AssetFemale3DCG = [
 				]
 			},
 			{ 
-				Name: "PetBed", Fetish: ["Pet"], Value: 50, Difficulty: -25, SelfBondage: 0, Time: 5, RemoveTime: 5, Effect: ["Freeze"], RemoveAtLogin: true, SetPose: ["Kneel"], AllowPose: ["Kneel", "AllFours","Hogtied"], 
+				Name: "PetBed", Fetish: ["Pet"], Value: 50, Difficulty: -25, SelfBondage: 0, Time: 5, RemoveTime: 5, Effect: ["Teathered"], RemoveAtLogin: true, SetPose: ["Kneel"], AllowPose: ["Kneel", "AllFours","Hogtied"], 
 				Layer: [
 					{ Name: "Lining", Priority: 1, AllowColorize: false},
 					{ Name: "Bed", AllowColorize: true, Alpha: [{ Pose: ["AllFours","Hogtied"], Masks: [
