@@ -216,7 +216,7 @@ var AssetFemale3DCG = [
 				{ Name: "Jewels", AllowColorize: true },
 				]
 			},
-			{ Name: "Bandana", Value: 15, BuyGroup: "ScafGag", ParentGroup: null},
+			{ Name: "Bandana", Value: 15, Left: 148, Top: 97, BuyGroup: "ScarfGag", ParentGroup: null},
 		],
 		Color: ["Default", "#202020", "#808080", "#bbbbbb", "#aa8080", "#80aa80", "#8080aa", "#aaaa80", "#80aaaa", "#aa80aa", "#cc3333", "#33cc33", "#3333cc", "#cccc33", "#33cccc", "#cc33cc"]
 	},
