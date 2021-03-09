@@ -3,11 +3,22 @@
 var InventoryItemDevicesPetBedOptions = [
 	{
 		Name: "NoBlanket",
-		Property: { Type: null },
+		Property: { 
+			Type: null 
+		},
 	},
 	{
 		Name: "Blanket",
-		Property: { Type: "Blanket" },
+		Property: { 
+			Type: "Blanket", 
+			SetPose: ["AllFours"],
+			Alpha: [{ Masks: [[0, 0, 500, 1000]] }],
+			Block: [
+				"ItemArms", "ItemBreast", "ItemButt", "ItemFeet", 
+				"ItemLegs", "ItemMisc", "ItemNipples", "ItemNipplesPiercings", 
+				"ItemPelvis", "ItemTorso", "ItemVulva", "ItemVulvaPiercings"
+			]
+		},
 	},
 ];
 
