@@ -3912,7 +3912,7 @@ var AssetFemale3DCG = [
 				Name: "PetBed", Fetish: ["Pet"], Value: 50, Difficulty: -25, SelfBondage: 0, Time: 5, RemoveTime: 5, Effect: ["Tethered"], RemoveAtLogin: true, SetPose: ["Kneel"], FixedPosition: true, Extended: true, HasType: false,
 				Layer: [
 					{ Name: "Lining", Priority: 1, AllowColorize: false},
-					{ Name: "Bed", AllowColorize: true, Alpha: [{ Masks: [[0, 800, 500, 250]] }] }, 
+					{ Name: "Bed", AllowColorize: true, Alpha: [{ Masks: [[0, 800, 500, 900]] }] }, 
 					{ Name: "Blanket", Priority: 6, AllowColorize: true, Alpha: [{ Masks: [[0, 0, 0, 0]] }], AllowTypes: ["Blanket"] },
 					{ Name: "Inner", Priority: 2, AllowColorize: true, AllowTypes: ["Blanket"]},
 				], 
