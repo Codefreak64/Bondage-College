@@ -3912,8 +3912,10 @@ var AssetFemale3DCG = [
 				Name: "PetBed", Fetish: ["Pet"], Value: 50, Difficulty: -25, SelfBondage: 0, Time: 5, RemoveTime: 5, Effect: ["Tethered"], RemoveAtLogin: true, SetPose: ["Kneel"], FixedPosition: true, 
 				Layer: [
 					{ Name: "Lining", Priority: 1, AllowColorize: false},
-					{ Name: "Bed", AllowColorize: true, Alpha: [{ Masks: [[0, 800, 500, 250],] }] }
-				], Extended: true, AllowType:["NoBlanket", "Blanket"]
+					{ Name: "Bed", AllowColorize: true, Alpha: [{ Masks: [[0, 800, 500, 250]] }] },
+					{ Name: "Blanket", AllowColorize: true, Alpha: [{ Masks: [[0, 0, 0, 0]] }], AllowTypes: ["Blanket"] },
+					{ Name: "Inner", AllowColorize: true, AllowTypes: ["Blanket"]},
+				], 
 			},
 			{
 				Name: "TransportWoodenBox", Value: 60, Difficulty: -2, SelfBondage: 5, Time: 15, RemoveTime: 10, AllowLock: true, Audio: "LockLarge", DefaultColor: ["Default", "Default", "Default", "#600"], Extended: true, RemoveAtLogin: true, SetPose: ["BaseLower"], MinOpacity: 0, Opacity: 0, DynamicAfterDraw: true, FixedPosition: true,
