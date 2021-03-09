@@ -6,19 +6,19 @@ var InventoryItemDevicesPetBedOptions = [
 		Property: { Type: null },
 	},
 	{
-		Name: "Cat",
-		Property: { Type: "Cat" },
+		Name: "Blanket",
+		Property: { Type: "Blanket" },
 	},
 ];
 
 // Loads the item extension properties
 function InventoryItemDevicesPetBedLoad() {
-	ExtendedItemLoad(InventoryItemDevicesPetBedrOptions, "SelectFamiliarType");
+	ExtendedItemLoad(InventoryItemDevicesPetBedrOptions, "SelectPetBedType");
 }
 
 // Draw the item extension screen
 function InventoryItemDevicesPetBedDraw() {
-	ExtendedItemDraw(InventoryItemDevicesPetBedOptions, "FamiliarType");
+	ExtendedItemDraw(InventoryItemDevicesPetBedOptions, "PetBedType");
 }
 
 // Catches the item extension clicks
@@ -27,7 +27,7 @@ function InventoryItemDevicesPetBedClick() {
 }
 
 function InventoryItemDevicesPetBedAction(C, Option) {
-	var msg = "FamiliarSet" + Option.Name;
+	var msg = "PedBedSet" + Option.Name;
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "TargetCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
@@ -36,5 +36,5 @@ function InventoryItemDevicesPetBedAction(C, Option) {
 }
 
 function InventoryItemDevicesPetBedNpcDialog(C, Option) {
-	C.CurrentDialog = DialogFind(C, "FamiliarSet" + Option.Name, "ItemDevices");
+	C.CurrentDialog = DialogFind(C, "PetBedSet" + Option.Name, "ItemDevices");
 }

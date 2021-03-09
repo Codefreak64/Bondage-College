@@ -1892,3 +1892,8 @@ EyePatchTypeRight,,,Right,,
 SelectSpreaderType,,,Select leg spreader width.,,
 SpreaderMetalPoseNarrow,,,Narrow,,
 SpreaderMetalPoseWide,,,Wide,,
+SelectPetBedType,,,Change blanket,,
+PetBedTypeBlanket,,,Add blanket
+PetBedTypeNoBlanket,,,Remove blanket
+PetBedSetBlanket,,,SourceCharacter adds a blanket onto DestinationCharacter.,,
+PetBedSetNoBlanket,,,SourceCharacter removes the blanket from DestinationCharacter.,,
