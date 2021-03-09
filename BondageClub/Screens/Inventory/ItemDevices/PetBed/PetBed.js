@@ -13,7 +13,7 @@ var InventoryItemDevicesPetBedOptions = [
 
 // Loads the item extension properties
 function InventoryItemDevicesPetBedLoad() {
-	ExtendedItemLoad(InventoryItemDevicesPetBedrOptions, "SelectPetBedType");
+	ExtendedItemLoad(InventoryItemDevicesPetBedOptions, "SelectPetBedType");
 }
 
 // Draw the item extension screen
