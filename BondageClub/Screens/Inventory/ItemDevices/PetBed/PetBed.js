@@ -12,9 +12,9 @@ var InventoryItemDevicesPetBedOptions = [
 		Property: { 
 			Type: "Blanket", 
 			SetPose: ["AllFours"],
-			Hide: ["ItemArms"],
+			Hide: ["ItemArms", "ItemButt", "TailStraps", "Wings"],
 			Block: [
-				"ItemArms", "ItemBreast", "ItemButt", "ItemFeet", 
+				"ItemArms", "ItemBreast", "ItemButt", "ItemFeet", "ItemBoots",
 				"ItemLegs", "ItemMisc", "ItemNipples", "ItemNipplesPiercings", 
 				"ItemPelvis", "ItemTorso", "ItemVulva", "ItemVulvaPiercings"
 			]
