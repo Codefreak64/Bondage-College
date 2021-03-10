@@ -3913,7 +3913,7 @@ var AssetFemale3DCG = [
 				Layer: [
 					{ Name: "Lining", Priority: 1, AllowColorize: false},
 					{ Name: "Bed", AllowColorize: true, Alpha: [{ Masks: [[0, 800, 500, 900]] }] }, 
-					{ Name: "Blanket", Priority: 6, AllowColorize: true, Alpha: [{ Masks: [[0, 0, 0, 0]] }], AllowTypes: ["Blanket"] },
+					{ Name: "Blanket", Priority: 4, AllowColorize: true, Alpha: [{ Masks: [[0, 0, 0, 0]] }], AllowTypes: ["Blanket"] },
 					{ Name: "Inner", Priority: 2, AllowColorize: true, AllowTypes: ["Blanket"]},
 				], 
 			},
