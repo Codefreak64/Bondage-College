@@ -5,12 +5,14 @@ var InventoryItemNipplesPlateClampsOptions = [
 		Name: "Loose",
 		Property: {
 			Type: null,
+			SuctionLevel: "0"
 		},
 	},
 	{
-		Name: "Light",
+		Name: "Tight",
 		Property: {
-			Type: "Light",
+			Type: "Tight",
+			SuctionLevel: "1"
 		},
 	}
 ]
@@ -49,7 +51,7 @@ function InventoryItemNipplesPlateClampsClick() {
 function InventoryItemNipplesPlateClampsPublishAction(C, Option, PreviousOption) {
 	var NewIndex = InventoryItemNipplesPlateClampsOptions.indexOf(Option);
 	var PreviousIndex = InventoryItemNipplesPlateClampsOptions.indexOf(PreviousOption);
-	var msg = "NipSuc" + ((NewIndex > PreviousIndex) ? "tightens" : "loosens") + "To" + Option.Property.SuctionLevel;
+	var msg = "PClamps" + ((NewIndex > PreviousIndex) ? "tightens" : "loosens") + "To" + Option.Property.SuctionLevel;
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
