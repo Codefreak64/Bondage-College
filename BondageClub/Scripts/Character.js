@@ -113,7 +113,8 @@ function CharacterReset(CharacterID, CharacterAssetFamily) {
 		IsNpc: function () { return (this.AccountName.substring(0, 4) === "NPC_" || this.AccountName.substring(0, 4) === "NPC-"); },
 		GetDifficulty: function () { return ((this.Difficulty == null) || (this.Difficulty.Level == null) || (typeof this.Difficulty.Level !== "number") || (this.Difficulty.Level < 0) || (this.Difficulty.Level > 3)) ? 1 : this.Difficulty.Level; },
 		IsInverted: function () { return this.Pose.indexOf("Suspension") >= 0; },
-		CanChangeToPose: function(Pose) { return CharacterCanChangeToPose(this, Pose); }
+		CanChangeToPose: function(Pose) { return CharacterCanChangeToPose(this, Pose); },
+		GetClumsiness: function() { return CharacterGetClumsiness(this); },
 	};
 
 	// If the character doesn't exist, we create it
@@ -275,6 +276,19 @@ function CharacterArchetypeClothes(C, Archetype, ForceColor) {
 		InventoryRemove(C, "Socks");
 	}
 	
+	// Employee archetype
+	if (Archetype == "Employee") {
+		InventoryAdd(C, "VirginKiller1", "Cloth", false);
+		CharacterAppearanceSetItem(C, "Cloth", C.Inventory[C.Inventory.length - 1].Asset);
+		CharacterAppearanceSetColorForGroup(C, "Default", "Cloth");
+		InventoryAdd(C, "Jeans1", "ClothLower", false);
+		CharacterAppearanceSetItem(C, "ClothLower", C.Inventory[C.Inventory.length - 1].Asset);
+		CharacterAppearanceSetColorForGroup(C, "Default", "ClothLower");
+		InventoryAdd(C, "SunGlasses1", "Glasses", false);
+		CharacterAppearanceSetItem(C, "Glasses", C.Inventory[C.Inventory.length - 1].Asset);
+		CharacterAppearanceSetColorForGroup(C, "Default", "Glasses");
+	}
+
 }
 
 /**
@@ -300,6 +314,7 @@ function CharacterLoadNPC(NPCType) {
 
 	// Sets archetype clothes
 	if (NPCType.indexOf("Maid") >= 0) CharacterArchetypeClothes(C, "Maid");
+	if (NPCType.indexOf("Employee") >= 0) CharacterArchetypeClothes(C, "Employee");
 	if (NPCType.indexOf("Mistress") >= 0) CharacterArchetypeClothes(C, "Mistress");
 
 	// Returns the new character
@@ -354,7 +369,7 @@ function CharacterOnlineRefresh(Char, data, SourceMemberNumber) {
 	Char.BlockItems = Array.isArray(data.BlockItems) ? data.BlockItems : [];
 	Char.LimitedItems = Array.isArray(data.LimitedItems) ? data.LimitedItems : [];
 	if (Char.ID != 0) Char.WhiteList = data.WhiteList;
-	Char.Appearance = ServerAppearanceLoadFromBundle(Char, "Female3DCG", data.Appearance, SourceMemberNumber);
+	Char.Appearance = ServerAppearanceLoadFromBundle(Char, "Female3DCG", data.Appearance, SourceMemberNumber).appearance;
 	if (Char.ID == 0) LoginValidCollar();
 	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.Inventory == null) || (Char.Inventory.length == 0))) InventoryLoad(Char, data.Inventory);
 	CharacterLoadEffect(Char);
@@ -959,10 +974,8 @@ function CharacterReleaseTotal(C) {
 function CharacterGetBonus(C, BonusType) {
 	var Bonus = 0;
 	for (let I = 0; I < C.Inventory.length; I++)
-		if ((C.Inventory[I].Asset != null) && (C.Inventory[I].Asset.Bonus != null))
-			for (let B = 0; B < C.Inventory[I].Asset.Bonus.length; B++)
-				if ((C.Inventory[I].Asset.Bonus[B].Type == BonusType) && (C.Inventory[I].Asset.Bonus[B].Factor > Bonus))
-					Bonus = C.Inventory[I].Asset.Bonus[B].Factor;
+		if ((C.Inventory[I].Asset != null) && (C.Inventory[I].Asset.Bonus != null) && (C.Inventory[I].Asset.Bonus == BonusType))
+			Bonus++;
 	return Bonus;
 }
 
@@ -1225,7 +1238,7 @@ function CharacterCanKneel(C) {
 /**
  * Determines how much the character's view should be darkened based on their blind level. 1 is fully visible, 0 is pitch black.
  * @param {Character} C - The character to check
- * @param {boolean} eyesOnly - If TRUE only check whether the character has eyes closed, and ignore item effects
+ * @param {boolean} [eyesOnly=false] - If TRUE only check whether the character has eyes closed, and ignore item effects
  * @returns {number} - The number between 0 (dark) and 1 (bright) that determines screen darkness
  */
 function CharacterGetDarkFactor(C, eyesOnly = false) {
@@ -1236,4 +1249,18 @@ function CharacterGetDarkFactor(C, eyesOnly = false) {
 	else if (blindLevel === 2) DarkFactor = 0.15;
 	else if (blindLevel === 1) DarkFactor = 0.3;
 	return DarkFactor;
+}
+
+/**
+ * Gets the clumsiness level of a character. This represents dexterity when interacting with locks etc. and can have a
+ * maximum value of 5.
+ * @param {Character} C - The character to check
+ * @returns {number} - The clumsiness rating of the player, a number between 0 and 5 inclusive.
+ */
+function CharacterGetClumsiness(C) {
+	let clumsiness = 0;
+	if (!C.CanInteract()) clumsiness += 2;
+	const handItem = InventoryGet(C, "ItemHands");
+	if (handItem && handItem.Asset.IsRestraint) clumsiness += 3;
+	return Math.min(clumsiness, 5);
 }

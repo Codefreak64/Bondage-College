@@ -225,7 +225,9 @@ function DrawArousalMeter(C, X, Y, Zoom) {
  * @param {boolean} IsHeightResizeAllowed - Whether or not the settings allow for the height modifier to be applied
  * @returns {void} - Nothing
  */
-function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {	
+function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed, DrawCanvas) {
+	if (!DrawCanvas) DrawCanvas = MainCanvas
+	
 	if ((C != null) && ((C.ID == 0) || (Player.GetBlindLevel() < 3 || CurrentModule == "MiniGame") || (CurrentScreen == "InformationSheet"))) {
 
 		if (ControllerActive == true) {
@@ -234,7 +236,7 @@ function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {
 
 		// If there's a fixed image to draw instead of the character
 		if (C.FixedImage != null) {
-			DrawImageZoomCanvas(C.FixedImage, MainCanvas, 0, 0, 500, 1000, X, Y, 500 * Zoom, 1000 * Zoom);
+			DrawImageZoomCanvas(C.FixedImage, DrawCanvas, 0, 0, 500, 1000, X, Y, 500 * Zoom, 1000 * Zoom);
 			return;
 		}
 
@@ -268,7 +270,7 @@ function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {
 		CharacterCanvas.canvas.height = Canvas.height;
 
 		// If we must dark the Canvas characters
-		if ((C.ID != 0) && Player.IsBlind() && (CurrentScreen != "InformationSheet")) {
+		if ((C.ID != 0) && Player.IsBlind() && (CurrentScreen != "InformationSheet") && CurrentModule != "MiniGame") {
 			const DarkFactor = Math.min(CharacterGetDarkFactor(Player) * 2, 1);
 			
 			CharacterCanvas.globalCompositeOperation = "copy";
@@ -306,13 +308,13 @@ function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {
 		const DestY = (IsInverted || YCutOff) ? 0 : YOffset;
 
 		// Draw the character
-		MainCanvas.drawImage(Canvas, 0, SourceY, Canvas.width, SourceHeight, X + XOffset * Zoom, Y + DestY * Zoom, 500 * HeightRatio * Zoom, (1000 - DestY) * Zoom);
+		DrawCanvas.drawImage(Canvas, 0, SourceY, Canvas.width, SourceHeight, X + XOffset * Zoom, Y + DestY * Zoom, 500 * HeightRatio * Zoom, (1000 - DestY) * Zoom);
 
 		// Draw the arousal meter & game images on certain conditions
 		if (CurrentScreen != "ChatRoom" || ChatRoomHideIconState <= 1) {
 			DrawArousalMeter(C, X, Y, Zoom);
 			OnlineGameDrawCharacter(C, X, Y, Zoom);
-			if (C.HasHiddenItems) DrawImageZoomCanvas("Screens/Character/Player/HiddenItem.png", MainCanvas, 0, 0, 86, 86, X + 54 * Zoom, Y + 880 * Zoom, 70 * Zoom, 70 * Zoom);
+			if (C.HasHiddenItems) DrawImageZoomCanvas("Screens/Character/Player/HiddenItem.png", DrawCanvas, 0, 0, 86, 86, X + 54 * Zoom, Y + 880 * Zoom, 70 * Zoom, 70 * Zoom);
 		}
 		
 		// Draws the character focus zones if we need too
@@ -334,10 +336,10 @@ function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {
 		// Draw the character name below herself
 		if ((C.Name != "") && ((CurrentModule == "Room") || (CurrentModule == "Online" && !(CurrentScreen == "ChatRoom" && ChatRoomHideIconState >= 3)) || ((CurrentScreen == "Wardrobe") && (C.ID != 0))) && (CurrentScreen != "Private"))
 			if (!Player.IsBlind() || (Player.GameplaySettings && Player.GameplaySettings.SensDepChatLog == "SensDepLight")) {
-				MainCanvas.font = CommonGetFont(30);
+				DrawCanvas.font = CommonGetFont(30);
 				const NameOffset = CurrentScreen == "ChatRoom" && (ChatRoomCharacter.length > 5 || (ChatRoomCharacter.length == 5 && CommonPhotoMode)) && CurrentCharacter == null ? -4 : 0;
 				DrawText(C.Name, X + 255 * Zoom, Y + 980 * Zoom + NameOffset, (CommonIsColor(C.LabelColor)) ? C.LabelColor : "White", "Black");
-				MainCanvas.font = CommonGetFont(36);
+				DrawCanvas.font = CommonGetFont(36);
 			}
 
 	}
@@ -1098,29 +1100,46 @@ function DrawProgressBar(X, Y, W, H, Progress) {
 }
 
 /**
+ * Draws a progress bar with color
+ * @param {number} X - Position of the bar on the X axis
+ * @param {number} Y - Position of the bar on the Y axis
+ * @param {number} W - Width of the bar
+ * @param {number} H - Height of the bar
+ * @param {number} Progress - Current progress to display on the bar
+ * @param {string} ColorFG - Color of the first part of the bar
+ * @param {string} ColorFG - Color of the bar background
+ * @returns {void} - Nothing
+ */
+function DrawProgressBarColor(X, Y, W, H, Progress, ColorFG, ColorBG) {
+	DrawRect(X, Y, W, H, "white");
+	DrawRect(X + 2, Y + 2, Math.floor((W - 4) * Progress / 100), H - 4, ColorFG);
+	DrawRect(Math.floor(X + 2 + (W - 4) * Progress / 100), Y + 2, Math.floor((W - 4) * (100 - Progress) / 100), H - 4, ColorBG);
+}
+
+/**
  * Gets the player's custom background based on type
  * @returns {string} - Custom background if applicable, otherwise ""
  */
 function DrawGetCustomBackground() {
-	var blindfold = InventoryGet(Player, "ItemHead")
-	var hood = InventoryGet(Player, "ItemHood")
-	var customBG = ""
-	
+	const blindfold = InventoryGet(Player, "ItemHead");
+	const hood = InventoryGet(Player, "ItemHood");
+	let customBG = "";
+
 	if (blindfold && blindfold.Asset && blindfold.Asset.CustomBlindBackground) {
-		var type = "None"
+		let type = "None";
 		if (blindfold.Property && blindfold.Property.Type && blindfold.Asset.CustomBlindBackground[blindfold.Property.Type] != null)
-			type = blindfold.Property.Type
+			type = blindfold.Property.Type;
 		if (blindfold.Asset.CustomBlindBackground[type])
-			customBG = blindfold.Asset.CustomBlindBackground[type]
+			customBG = blindfold.Asset.CustomBlindBackground[type];
 	} else if (hood && hood.Asset && hood.Asset.CustomBlindBackground) {
-				var type = "None"
+		let type = "None";
 		if (hood.Property && hood.Property.Type && hood.Asset.CustomBlindBackground[hood.Property.Type])
-			type = hood.Property.Type
+			type = hood.Property.Type;
 		if (hood.Asset.CustomBlindBackground[type])
-			customBG = hood.Asset.CustomBlindBackground[type]
+			customBG = hood.Asset.CustomBlindBackground[type];
 	}
-	
-	return customBG
+
+	return customBG;
 }
 
 
@@ -1136,25 +1155,24 @@ function DrawProcess() {
 	}
 
 	// Gets the current screen background and draw it, it becomes darker in dialog mode or if the character is blindfolded
-	var B = window[CurrentScreen + "Background"];
-		
+	let B = window[CurrentScreen + "Background"];
+
 	if ((B != null) && (B != "")) {
-		var customBG = ""
 		let DarkFactor = 1.0;
 		if ((CurrentModule != "Character" && CurrentModule != "MiniGame") && (B != "Sheet")) {
-			DarkFactor = CharacterGetDarkFactor(Player);
+			DarkFactor = CharacterGetDarkFactor(Player) * CurrentDarkFactor;
 			if (DarkFactor == 1 && (CurrentCharacter != null || ShopStarted) && !CommonPhotoMode) DarkFactor = 0.5;
 		}
 		const Invert = Player.GraphicsSettings && Player.GraphicsSettings.InvertRoom && Player.IsInverted();
 		if (DarkFactor == 0.0) {
-			customBG = DrawGetCustomBackground()
-			
+			let customBG = DrawGetCustomBackground();
+
 			if (customBG != "") {
-				B = customBG
+				B = customBG;
 				DarkFactor = CharacterGetDarkFactor(Player, true);
 			}
 		}
-		
+
 		if (DarkFactor > 0.0) {
 			if (!DrawImage("Backgrounds/" + B + ".jpg", 0, 0, Invert)) {
 				// Draw empty background to overdraw old content if background image isn't ready
@@ -1188,8 +1206,8 @@ function DrawProcess() {
 	// If needed
 	// Used to support items that remove you from the dialog during the draw phase
 	if (DialogLeaveDueToItem) {
-		DialogLeaveDueToItem = false
-		DialogLeave()
+		DialogLeaveDueToItem = false;
+		DialogLeave();
 	}
 
 }
