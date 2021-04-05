@@ -4,15 +4,13 @@ var InventoryItemNipplesPlateClampsOptions = [
 	{
 		Name: "Loose",
 		Property: {
-			Type: null,
-			SuctionLevel: "0"
+			Type: null
 		},
 	},
 	{
 		Name: "Tight",
 		Property: {
-			Type: "Tight",
-			SuctionLevel: "1"
+			Type: "Tight"
 		},
 	}
 ]
@@ -21,8 +19,8 @@ var InventoryItemNipplesPlateClampsOptions = [
  * Loads the item extension properties
  * @returns {void} - Nothing
  */
-function InventoryItemNipplesPlateClampsLoad() {
-	ExtendedItemLoad(InventoryItemNipplesPlateClampsOptions, "SelectSuctionLevel");
+ function InventoryItemNipplesPlateClampsLoad() {
+    ExtendedItemLoad(InventoryItemNipplesPlateClampsOptions, "ItemNipplesPlateClampsSelectTightness");
 }
 
 /**
@@ -30,9 +28,8 @@ function InventoryItemNipplesPlateClampsLoad() {
  * @returns {void} - Nothing
  */
 function InventoryItemNipplesPlateClampsDraw() {
-	ExtendedItemDraw(InventoryItemNipplesPlateClampsOptions, "SuctionLevel", InventoryItemNipplesPlateClampsOptions.length, false);
+    ExtendedItemDraw(InventoryItemNipplesPlateClampsOptions, "ItemNipplesPlateClampsTightnessLevel", InventoryItemNipplesPlateClampsOptions.length, false);
 }
-
 /**
  * Catches the item extension clicks
  * @returns {void} - Nothing
@@ -49,9 +46,7 @@ function InventoryItemNipplesPlateClampsClick() {
  * @returns {void} - Nothing
  */
 function InventoryItemNipplesPlateClampsPublishAction(C, Option, PreviousOption) {
-	var NewIndex = InventoryItemNipplesPlateClampsOptions.indexOf(Option);
-	var PreviousIndex = InventoryItemNipplesPlateClampsOptions.indexOf(PreviousOption);
-	var msg = "PClamps" + ((NewIndex > PreviousIndex) ? "tightens" : "loosens") + "To" + Option.Property.SuctionLevel;
+	var msg = "ItemNipplesPlateClamps" + Option.Name;
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
