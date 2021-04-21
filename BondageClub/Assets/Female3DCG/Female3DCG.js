@@ -1292,7 +1292,7 @@ var AssetFemale3DCG = [
 	{
 		Group: "Hands",
 		ParentColor: "BodyUpper",
-		Priority: 27,
+		Priority: 31,
 		AllowNone: false,
 		AllowColorize: false,
 		AllowCustomize: false,
