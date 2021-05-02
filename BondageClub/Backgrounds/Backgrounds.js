@@ -184,6 +184,8 @@ var BackgroundsList = [
 	{ Name: "Ranch", Tag: [BackgroundsTagOutdoor] },
 	{ Name: "Wagons", Tag: [BackgroundsTagOutdoor] },
 	{ Name: "OutdoorPool2", Tag: [BackgroundsTagOutdoor, BackgroundsTagAquatic] },
+    { Name: "SynthWave", Tag: [BackgroundsTagOutdoor, BackgroundsTagSciFiFantasy] },
+    { Name: "HotelBedroom", Tag: [BackgroundsTagIndoor] }
 ];
 
 /**
@@ -198,7 +200,7 @@ function BackgroundsGenerateList(BackgroundTagList) {
 		for (let T = 0; T < BackgroundsList[B].Tag.length; T++)
 			if (BackgroundTagList.indexOf(BackgroundsList[B].Tag[T]) >= 0) {
 				List.push(BackgroundsList[B].Name);
-				var Desc = DialogFind(Player, BackgroundsList[B].Name);
+				var Desc = DialogFindPlayer(BackgroundsList[B].Name);
 				BackgroundSelectionAll.push({ Name: BackgroundsList[B].Name, Description: Desc, Low: Desc.toLowerCase() });
 				break;
 			}

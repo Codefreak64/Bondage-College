@@ -316,6 +316,11 @@ function PrivatePlayerCanTurnTables() { return (!Player.IsRestrained() && (Reput
  * @returns {boolean} - TRUE if turning the tables is possible
  */
 function PrivateSubCanTurnTables() { return (!Player.IsRestrained() && !CurrentCharacter.IsRestrained() && !Player.IsOwned() && !PrivateOwnerInRoom() && (ReputationGet("Dominant") + 50 <= NPCTraitGet(CurrentCharacter, "Dominant")) && (NPCEventGet(CurrentCharacter, "NPCCollaring") > 0)) }
+/**
+ * Checks if it's possible to use cheats on an NPC
+ * @returns {boolean} - TRUE if we allow NPC cheats
+ */
+function PrivateNPCAllowCheat() { return (CheatFactor("ChangeNPCTrait", 0) == 0) }
 
 /**
  * Loads the private room screen and the vendor NPC.
@@ -335,10 +340,14 @@ function PrivateLoad() {
 	PrivateVendor.AllowItem = false;
 	Player.ArousalSettings.OrgasmCount = 0;
 	NPCTraitDialog(PrivateVendor);
-	for (let C = 1; C < PrivateCharacter.length; C++)
-		PrivateLoadCharacter(C);
-	PrivateRelationDecay();
+	let mustSync = false;
+	for (let C = 1; C < PrivateCharacter.length; C++) {
+		const updateRequired = PrivateLoadCharacter(C);
+		mustSync = mustSync || updateRequired;
+	}
+	mustSync = mustSync || PrivateRelationDecay();
 
+	if (mustSync) ServerPrivateCharacterSync();
 }
 
 /**
@@ -672,17 +681,24 @@ function PrivateGetSecondExpansion() {
  * @returns {void} - Nothing.
  */
 function PrivateLoadCharacter(C) {
+	let updateRequired = false;
 
 	// If there's no account, we build the full character from the server template
 	if ((PrivateCharacter[C].AccountName == null) && (PrivateCharacter[C].Name != null)) {
-		var N = CharacterLoadNPC("NPC_Private_Custom");
+		const N = CharacterLoadNPC("NPC_Private_Custom");
 		N.Name = PrivateCharacter[C].Name;
 		PrivateCharacter[C].AccountName = "NPC_Private_Custom" + N.ID.toString();
 		N.AccountName = "NPC_Private_Custom" + N.ID.toString();
 		if (PrivateCharacter[C].Title != null) N.Title = PrivateCharacter[C].Title;
 		if (PrivateCharacter[C].AssetFamily != null) N.AssetFamily = PrivateCharacter[C].AssetFamily;
-		if (PrivateCharacter[C].Appearance != null) N.Appearance = ServerAppearanceLoadFromBundle(PrivateCharacter[C], PrivateCharacter[C].AssetFamily, PrivateCharacter[C].Appearance);
-		if (PrivateCharacter[C].AppearanceFull != null) N.AppearanceFull = ServerAppearanceLoadFromBundle(PrivateCharacter[C], PrivateCharacter[C].AssetFamily, PrivateCharacter[C].AppearanceFull);
+		if (PrivateCharacter[C].Appearance != null) {
+			const updateValid = ServerAppearanceLoadFromBundle(N, PrivateCharacter[C].AssetFamily, PrivateCharacter[C].Appearance)
+			updateRequired = updateRequired || !updateValid;
+		}
+		if (PrivateCharacter[C].AppearanceFull != null) {
+			const updateValid = ServerAppearanceLoadFromBundle(N, PrivateCharacter[C].AssetFamily, PrivateCharacter[C].AppearanceFull, null, true)
+			updateRequired = updateRequired || !updateValid;
+		}
 		if (PrivateCharacter[C].Trait != null) N.Trait = PrivateCharacter[C].Trait.slice();
 		if (PrivateCharacter[C].Cage != null) N.Cage = PrivateCharacter[C].Cage;
 		if (PrivateCharacter[C].Event != null) N.Event = PrivateCharacter[C].Event;
@@ -705,6 +721,7 @@ function PrivateLoadCharacter(C) {
 	PrivateCharacter[C].ArousalSettings.Visible = "All";
 	PrivateCharacter[C].AllowItem = (((ReputationGet("Dominant") + 25 >= NPCTraitGet(PrivateCharacter[C], "Dominant")) && !PrivateCharacter[C].IsOwner()) || PrivateCharacter[C].IsOwnedByPlayer() || PrivateCharacter[C].IsRestrained() || !PrivateCharacter[C].CanTalk());
 
+	return updateRequired;
 }
 
 /**
@@ -770,7 +787,7 @@ function PrivateChange(NewCloth) {
 	if (NewCloth == "Naked") CharacterNaked(CurrentCharacter);
 	if (NewCloth == "Custom") {
 		PrivateNPCInteraction(10);
-		CharacterChangeMoney(Player, -50);
+		if (CheatFactor("FreeNPCDress", 0) != 0) CharacterChangeMoney(Player, -50);
 		PrivateCharacterNewClothes = CurrentCharacter;
 		DialogLeave();
 		CharacterAppearanceLoadCharacter(PrivateCharacterNewClothes);
@@ -816,7 +833,7 @@ function PrivateRestrainPlayer() {
 
 /**
  * Alters relationships to make them decay after some time. Below -100, the NPC leaves if she's not caged.
- * @returns {void} - Nothing.
+ * @returns {boolean} - Whether or not any private characters require updating.
  */
 function PrivateRelationDecay() {
 	var MustSave = false;
@@ -836,7 +853,7 @@ function PrivateRelationDecay() {
 				}
 			}
 	}
-	if (MustSave) ServerPrivateCharacterSync();
+	return MustSave;
 }
 
 /**
@@ -1416,4 +1433,13 @@ function PrivateSubTurnTablesDone() {
 	Player.Owner = "NPC-" + CurrentCharacter.Name;
 	ServerPlayerSync();
 
+}
+
+/**
+ * When the player triggers a cheat on a NPC
+ * @returns {void} - Nothing.
+ */
+function PrivateNPCCheat(Type) {
+	if (Type == "TraitDominant") NPCTraitSet(CurrentCharacter, "Dominant", (NPCTraitGet(CurrentCharacter, "Dominant") >= 90) ? 100 : NPCTraitGet(CurrentCharacter, "Dominant") + 10);
+	if (Type == "TraitSubmissive") NPCTraitSet(CurrentCharacter, "Dominant", (NPCTraitGet(CurrentCharacter, "Dominant") <= -90) ? -100 : NPCTraitGet(CurrentCharacter, "Dominant") - 10);
 }

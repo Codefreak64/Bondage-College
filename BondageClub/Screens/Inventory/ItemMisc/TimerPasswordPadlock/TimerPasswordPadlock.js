@@ -19,7 +19,7 @@ function InventoryItemMiscTimerPasswordPadlockLoad() {
 
 	// Only create the inputs if the zone isn't blocked
 	if (!InventoryGroupIsBlocked(C, C.FocusGroup.Name)) {
-		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet || 
+		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet ||
 		(DialogFocusSourceItem.Property.LockMemberNumber && DialogFocusSourceItem.Property.LockMemberNumber != Player.MemberNumber))) {
 			// Normal lock interface
 			ElementCreateInput("Password", "text", "", "8");
@@ -28,14 +28,14 @@ function InventoryItemMiscTimerPasswordPadlockLoad() {
 				|| C.IsOwnedByPlayer() || C.IsLoverOfPlayer())) document.getElementById("Password").placeholder = DialogFocusSourceItem.Property.Password;
 		} else {
 			// Set a password and hint
-			ElementCreateInput("SetPassword", "text", "", "8");
 			ElementCreateInput("SetHint", "text", "", "140");
+			ElementCreateInput("SetPassword", "text", "", "8");
 			// the current code is shown for owners, lovers and the member whose number is on the padlock
 			document.getElementById("SetPassword").placeholder = DialogFocusSourceItem.Property.Password;
 			document.getElementById("SetHint").placeholder = DialogFocusSourceItem.Property.Hint;
 		}
-		
-		
+
+
 	}
 }
 
@@ -43,74 +43,72 @@ function InventoryItemMiscTimerPasswordPadlockLoad() {
 function InventoryItemMiscTimerPasswordPadlockDraw() {
     if ((DialogFocusItem == null) || (DialogFocusSourceItem.Property.RemoveTimer < CurrentTime)) { InventoryItemMiscTimerPasswordPadlockExit(); return; }
     if (DialogFocusSourceItem.Property.ShowTimer) {
-        DrawText(DialogFind(Player, "TimerLeft") + " " + TimerToString(DialogFocusSourceItem.Property.RemoveTimer - CurrentTime), 1500, 150, "white", "gray");
-    } else { DrawText(DialogFind(Player, "TimerUnknown"), 1500, 150, "white", "gray"); }
+        DrawText(DialogFindPlayer("TimerLeft") + " " + TimerToString(DialogFocusSourceItem.Property.RemoveTimer - CurrentTime), 1500, 100, "white", "gray");
+    } else { DrawText(DialogFindPlayer("TimerUnknown"), 1500, 150, "white", "gray"); }
 	var C = CharacterGetCurrent();
-	DrawRect(1412, 225, 175, 225, "white");
-	DrawImageResize("Assets/" + DialogFocusItem.Asset.Group.Family + "/" + DialogFocusItem.Asset.Group.Name + "/Preview/" + DialogFocusItem.Asset.Name + ".png", 1414, 227, 171, 171);
-	DrawTextFit(DialogFocusItem.Asset.Description, 1500, 425, 171, "black");
+	DrawAssetPreview(1387, 175, DialogFocusItem.Asset);
 	if ((DialogFocusSourceItem != null) && (DialogFocusSourceItem.Property != null) && (DialogFocusSourceItem.Property.LockMemberNumber != null))
-	DrawText(DialogFind(Player, "LockMemberNumber") + " " + DialogFocusSourceItem.Property.LockMemberNumber.toString(), 1500, 500, "white", "gray");
+	DrawText(DialogFindPlayer("LockMemberNumber") + " " + DialogFocusSourceItem.Property.LockMemberNumber.toString(), 1500, 500, "white", "gray");
 
 	if (InventoryGroupIsBlocked(C, C.FocusGroup.Name)) {
 		// If the zone is blocked, just display some text informing the player that they can't access the lock
-		DrawText(DialogFind(Player, "LockZoneBlocked"), 1500, 550, "white", "gray");
+		DrawText(DialogFindPlayer("LockZoneBlocked"), 1500, 550, "white", "gray");
 	} else {
-		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet || 
+		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet ||
 		(DialogFocusSourceItem.Property.LockMemberNumber && DialogFocusSourceItem.Property.LockMemberNumber != Player.MemberNumber))) {
 			// Normal lock interface
 			if (DialogFocusSourceItem && DialogFocusSourceItem.Property && DialogFocusSourceItem.Property.Hint)
 				DrawText("\"" + DialogFocusSourceItem.Property.Hint + "\"", 1500, 550, "white", "gray");
 			MainCanvas.textAlign = "right";
-			DrawText(DialogFind(Player, "PasswordPadlockOld"), 1390, 605, "white", "gray");
+			DrawText(DialogFindPlayer("PasswordPadlockOld"), 1390, 605, "white", "gray");
 			ElementPosition("Password", 1540, 605, 250);
 			MainCanvas.textAlign = "center";
-			DrawButton(1670, 580, 250, 64, DialogFind(Player, "PasswordPadlockEnter"), "White", "");
-			if (PreferenceMessage != "") DrawText(DialogFind(Player, PreferenceMessage), 1500, 200, "Red", "Black");
+			DrawButton(1670, 580, 250, 64, DialogFindPlayer("PasswordPadlockEnter"), "White", "");
+			if (PreferenceMessage != "") DrawText(DialogFindPlayer(PreferenceMessage), 1500, 200, "Red", "Black");
 		} else {
 			ElementPosition("SetHint", 1643, 550, 550);
 			ElementPosition("SetPassword", 1491, 620, 250);
 			MainCanvas.textAlign = "left";
-			DrawText(DialogFind(Player, "PasswordPadlockSetHint"), 1100, 553, "white", "gray");
-			DrawText(DialogFind(Player, "PasswordPadlockSetPassword"), 1100, 623, "white", "gray");
+			DrawText(DialogFindPlayer("PasswordPadlockSetHint"), 1100, 553, "white", "gray");
+			DrawText(DialogFindPlayer("PasswordPadlockSetPassword"), 1100, 623, "white", "gray");
 			MainCanvas.textAlign = "center";
-			DrawButton(1653, 593, 250, 64, DialogFind(Player, "PasswordPadlockChangePassword"), "White", "");
-			if (PreferenceMessage != "") DrawText(DialogFind(Player, PreferenceMessage), 1500, 200, "Red", "Black");
+			DrawButton(1653, 593, 250, 64, DialogFindPlayer("PasswordPadlockChangePassword"), "White", "");
+			if (PreferenceMessage != "") DrawText(DialogFindPlayer(PreferenceMessage), 1500, 200, "Red", "Black");
 		}
 	}
-	
+
 	// Copied from mistress timer padlock and modified
-	
+
 	// Draw the settings
     if (Player.CanInteract() && (Player.MemberNumber == DialogFocusSourceItem.Property.LockMemberNumber)) {
         MainCanvas.textAlign = "left";
         DrawButton(1100, 666, 64, 64, "", "White", (DialogFocusSourceItem.Property.RemoveItem) ? "Icons/Checked.png" : "");
-        DrawText(DialogFind(Player, "RemoveItemWithTimer"), 1200, 698, "white", "gray");
+        DrawText(DialogFindPlayer("RemoveItemWithTimer"), 1200, 698, "white", "gray");
         DrawButton( 1100, 746, 64, 64, "", "White", (DialogFocusSourceItem.Property.ShowTimer) ? "Icons/Checked.png" : "");
         DrawText(DialogFind(Player,"ShowItemWithTimerRemaining"), 1200, 778, "white", "gray");
         DrawButton(1100, 828, 64, 64, "", "White", (DialogFocusSourceItem.Property.EnableRandomInput) ? "Icons/Checked.png" : "");
-        DrawText(DialogFind(Player, "EnableRandomInput"), 1200, 858, "white", "gray");
+        DrawText(DialogFindPlayer("EnableRandomInput"), 1200, 858, "white", "gray");
         MainCanvas.textAlign = "center";
     } else {
         if ((DialogFocusSourceItem != null) && (DialogFocusSourceItem.Property != null) && (DialogFocusSourceItem.Property.LockMemberNumber != null))
-            DrawText(DialogFind(Player, "LockMemberNumber") + " " + DialogFocusSourceItem.Property.LockMemberNumber.toString(), 1500, 700, "white", "gray");
-        DrawText(DialogFind(Player, (DialogFocusSourceItem.Property.RemoveItem) ? "WillRemoveItemWithTimer" : "WontRemoveItemWithTimer"), 1500, 868, "white", "gray");
+            DrawText(DialogFindPlayer("LockMemberNumber") + " " + DialogFocusSourceItem.Property.LockMemberNumber.toString(), 1500, 700, "white", "gray");
+        DrawText(DialogFindPlayer((DialogFocusSourceItem.Property.RemoveItem) ? "WillRemoveItemWithTimer" : "WontRemoveItemWithTimer"), 1500, 868, "white", "gray");
     }
 
     // Draw buttons to add/remove time if available
     if (Player.CanInteract() && (Player.MemberNumber == DialogFocusSourceItem.Property.LockMemberNumber)) {
-        DrawButton(1100, 910, 250, 70, DialogFind(Player, "AddTimerTime"), "White");
-        DrawBackNextButton(1400, 910, 250, 70, PasswordTimerChooseList[PasswordTimerChooseIndex] + " " + DialogFind(Player, "Minutes"), "White", "",
-            () => PasswordTimerChooseList[(PasswordTimerChooseList.length + PasswordTimerChooseIndex - 1) % PasswordTimerChooseList.length] + " " + DialogFind(Player, "Minutes"),
-            () => PasswordTimerChooseList[(PasswordTimerChooseIndex + 1) % PasswordTimerChooseList.length] + " " + DialogFind(Player, "Minutes"));
+        DrawButton(1100, 910, 250, 70, DialogFindPlayer("AddTimerTime"), "White");
+        DrawBackNextButton(1400, 910, 250, 70, PasswordTimerChooseList[PasswordTimerChooseIndex] + " " + DialogFindPlayer("Minutes"), "White", "",
+            () => PasswordTimerChooseList[(PasswordTimerChooseList.length + PasswordTimerChooseIndex - 1) % PasswordTimerChooseList.length] + " " + DialogFindPlayer("Minutes"),
+            () => PasswordTimerChooseList[(PasswordTimerChooseIndex + 1) % PasswordTimerChooseList.length] + " " + DialogFindPlayer("Minutes"));
     }
     else if (Player.CanInteract() && DialogFocusSourceItem.Property.EnableRandomInput) {
         for (let I = 0; I < DialogFocusSourceItem.Property.MemberNumberList.length; I++) {
             if (DialogFocusSourceItem.Property.MemberNumberList[I] == Player.MemberNumber) return;
         }
-        DrawButton(1100, 910, 250, 70, "- " + DialogFocusItem.Asset.RemoveTimer * 3 / 60 + " " + DialogFind(Player, "Minutes"), "White");
-        DrawButton(1400, 910, 250, 70, DialogFind(Player, "Random"), "White");
-        DrawButton(1700, 910, 250, 70, "+ " + DialogFocusItem.Asset.RemoveTimer * 3 / 60 + " " + DialogFind(Player, "Minutes"), "White");
+        DrawButton(1100, 910, 250, 70, "- " + DialogFocusItem.Asset.RemoveTimer * 3 / 60 + " " + DialogFindPlayer("Minutes"), "White");
+        DrawButton(1400, 910, 250, 70, DialogFindPlayer("Random"), "White");
+        DrawButton(1700, 910, 250, 70, "+ " + DialogFocusItem.Asset.RemoveTimer * 3 / 60 + " " + DialogFindPlayer("Minutes"), "White");
     }
 }
 
@@ -130,28 +128,28 @@ function InventoryItemMiscTimerPasswordPadlockUnlock(C, Item) {
 function InventoryItemMiscTimerPasswordPadlockClick() {
 	var C = CharacterGetCurrent();
 	var Item = InventoryGet(C, C.FocusGroup.Name);
-	
+
 	// Exits the screen
 	if ((MouseX >= 1885) && (MouseX <= 1975) && (MouseY >= 25) && (MouseY <= 110)) {
 		InventoryItemMiscTimerPasswordPadlockExit();
 	}
 
 	if ((MouseX >= 1360) && (MouseX <= 1950) && !InventoryGroupIsBlocked(C, C.FocusGroup.Name)) {
-		
-		
-		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet || 
+
+
+		if (DialogFocusSourceItem.Property && (DialogFocusSourceItem.Property.LockSet ||
 		(DialogFocusSourceItem.Property.LockMemberNumber && DialogFocusSourceItem.Property.LockMemberNumber != Player.MemberNumber))) {
-				
+
 				// Opens the padlock
 				if (MouseIn(1670, 580, 250, 64)) {
 					if (ElementValue("Password").toUpperCase() == DialogFocusSourceItem.Property.Password) {
-						InventoryItemMiscTimerPasswordPadlockUnlock(C, DialogFocusSourceItem)
+						InventoryItemMiscTimerPasswordPadlockUnlock(C, DialogFocusSourceItem);
 						InventoryItemMiscTimerPasswordPadlockExit();
 					}
 
 					// Send fail message if online
 					else if (CurrentScreen == "ChatRoom") {
-						var Dictionary = [];
+						let Dictionary = [];
 						Dictionary.push({Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber});
 						Dictionary.push({Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber});
 						Dictionary.push({Tag: "FocusAssetGroup", AssetGroupName: C.FocusGroup.Name});
@@ -161,11 +159,11 @@ function InventoryItemMiscTimerPasswordPadlockClick() {
 					}
 					else { PreferenceMessage = "PasswordPadlockError"; }
 				}
-			
+
 		} else {
 				if (MouseIn(1653, 593, 250, 64)) {
-					var pw = ElementValue("SetPassword").toUpperCase()
-					var hint =  ElementValue("SetHint")
+					var pw = ElementValue("SetPassword").toUpperCase();
+					var hint =  ElementValue("SetHint");
 					var E = /^[A-Z]+$/;
 					// We only accept code made of letters
 					if (pw == "" || pw.match(E)) {
@@ -181,7 +179,7 @@ function InventoryItemMiscTimerPasswordPadlockClick() {
 								C.Appearance[A] = DialogFocusSourceItem;
 						}
 						if (CurrentScreen == "ChatRoom") {
-							var Dictionary = [];
+							let Dictionary = [];
 							Dictionary.push({Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber});
 							Dictionary.push({Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber});
 							Dictionary.push({Tag: "FocusAssetGroup", AssetGroupName: C.FocusGroup.Name});
@@ -194,15 +192,15 @@ function InventoryItemMiscTimerPasswordPadlockClick() {
 						}
 					}
 					else { PreferenceMessage = "PasswordPadlockErrorInput"; }
-					
+
 				}
 		}
 	}
-	
+
 	// Copied from mistress timer padlock
-		
+
 		if (!Player.CanInteract()) return;
-		
+
 		if (Player.MemberNumber == DialogFocusSourceItem.Property.LockMemberNumber) {
 			if ((MouseX >= 1100) && (MouseX <= 1164)) {
 				if ((MouseY >= 666) && (MouseY <= 730)) { DialogFocusSourceItem.Property.RemoveItem = !(DialogFocusSourceItem.Property.RemoveItem); }

@@ -84,11 +84,11 @@ function CommonDrawAppearanceBuild(C, {
 
 	// Loop through all layers in the character appearance
 	C.AppearanceLayers.forEach((Layer) => {
-		var A = Layer.Asset;
-		var AG = A.Group;
-		var CA = C.Appearance.find(item => item.Asset === A);
-		var Property = CA.Property;
-		var CountKey = AG.Name + "/" + A.Name;
+		const A = Layer.Asset;
+		const AG = A.Group;
+		const CountKey = AG.Name + "/" + A.Name;
+		let CA = C.Appearance.find(item => item.Asset === A);
+		let Property = CA.Property;
 
 		// Count how many layers we've drawn for this asset
 		LayerCounts[CountKey] = (LayerCounts[CountKey] || 0) + 1;
@@ -105,43 +105,37 @@ function CommonDrawAppearanceBuild(C, {
 
 		// If there's a pose style we must add (items take priority over groups, layers may override completely)
 		var Pose = "";
-		if (C.Pose && C.Pose.length) {
-			if (Layer.OverrideAllowPose) {
-				Pose = CommonDrawFindPose(C, Layer.OverrideAllowPose);
-			} else if (A.OverrideAllowPose) {
-				Pose = CommonDrawFindPose(C, A.OverrideAllowPose);
-			} else {
-				Pose = CommonDrawFindPose(C, A.AllowPose);
-				if (!Pose) Pose = CommonDrawFindPose(C, AG.AllowPose);
+		if (C.DrawPose && C.DrawPose.length) {
+			let AllowPose = Layer.AllowPose;
+			if (!Array.isArray(AllowPose)) AllowPose = A.AllowPose;
+			if (!Array.isArray(AllowPose)) AllowPose = AG.AllowPose;
+			Pose = CommonDrawFindPose(C, AllowPose);
+		}
+
+		// Check if we need to draw a different expression (for facial features)
+		let Expression = "";
+		let CurrentExpression = InventoryGetItemProperty(CA, "Expression");
+		if (!CurrentExpression && Layer.MirrorExpression) {
+			const MirroredItem = InventoryGet(C, Layer.MirrorExpression);
+			CurrentExpression = InventoryGetItemProperty(MirroredItem, "Expression");
+		}
+		if (CurrentExpression) {
+			const AllowExpression = InventoryGetItemProperty(CA, "AllowExpression", true);
+			if (CurrentExpression && AllowExpression && AllowExpression.includes(CurrentExpression)) {
+				Expression = CurrentExpression + "/";
 			}
 		}
 
-		// If we must apply alpha masks to the current image as it is being drawn
-		Layer.Alpha.forEach(AlphaDef => {
-			// If no groups are defined and the character's pose matches one of the allowed poses (or no poses are defined)
-			if ((!AlphaDef.Group || !AlphaDef.Group.length) &&
-			    (!AlphaDef.Pose || !Array.isArray(AlphaDef.Pose) || !!CommonDrawFindPose(C, AlphaDef.Pose))) {
-				AlphaDef.Masks.forEach(rect => {
-					clearRect(rect[0], rect[1] + CanvasUpperOverflow, rect[2], rect[3]);
-					clearRectBlink(rect[0], rect[1] + CanvasUpperOverflow, rect[2], rect[3]);
-				});
-			}
-		});
-
-		// Check if we need to draw a different expression (for facial features)
-		var Expression = "";
-		if (AG.AllowExpression && AG.AllowExpression.length)
-			if ((Property && Property.Expression && AG.AllowExpression.includes(Property.Expression)))
-				Expression = Property.Expression + "/";
+		let GroupName = A.DynamicGroupName;
 
 		// Find the X and Y position to draw on
 		var X = Layer.DrawingLeft != null ? Layer.DrawingLeft : (A.DrawingLeft != null ? A.DrawingLeft : AG.DrawingLeft);
 		var Y = Layer.DrawingTop != null ? Layer.DrawingTop : (A.DrawingTop != null ? A.DrawingTop : AG.DrawingTop);
-		if (C.Pose && C.Pose.length) {
-			C.Pose.forEach(CP => {
+		if (C.DrawPose && C.DrawPose.length) {
+			C.DrawPose.forEach(CP => {
 				var PoseDef = PoseFemale3DCG.find(P => P.Name === CP && P.MovePosition);
 				if (PoseDef) {
-					var MovePosition = PoseDef.MovePosition.find(MP => MP.Group === AG.Name);
+					var MovePosition = PoseDef.MovePosition.find(MP => MP.Group === GroupName);
 					if (MovePosition) {
 						X += MovePosition.X;
 						Y += MovePosition.Y;
@@ -149,6 +143,29 @@ function CommonDrawAppearanceBuild(C, {
 				}
 			});
 		}
+
+		// Offset Y to counteract height modifiers for fixed-position assets
+		let YFixedOffset = 0;
+		if (A.FixedPosition) {
+			if (C.IsInverted()) {
+				YFixedOffset = -Y + 1000 - (Y + CharacterAppearanceYOffset(C, C.HeightRatio) / C.HeightRatio);
+			} else {
+				YFixedOffset = C.HeightModifier + 1000 * (1 - C.HeightRatio) * (1 - C.HeightRatioProportion) / C.HeightRatio;
+			}
+		}
+		Y += YFixedOffset;
+
+		// If we must apply alpha masks to the current image as it is being drawn
+		Layer.Alpha.forEach(AlphaDef => {
+			// If no groups are defined and the character's pose matches one of the allowed poses (or no poses are defined)
+			if ((!AlphaDef.Group || !AlphaDef.Group.length) &&
+				(!AlphaDef.Pose || !Array.isArray(AlphaDef.Pose) || !!CommonDrawFindPose(C, AlphaDef.Pose))) {
+				AlphaDef.Masks.forEach(rect => {
+					clearRect(rect[0], rect[1] + CanvasUpperOverflow + YFixedOffset, rect[2], rect[3]);
+					clearRectBlink(rect[0], rect[1] + CanvasUpperOverflow + YFixedOffset, rect[2], rect[3]);
+				});
+			}
+		});
 
 		// Check if we need to draw a different variation (from type property)
 		var Type = (Property && Property.Type) || "";
@@ -172,6 +189,9 @@ function CommonDrawAppearanceBuild(C, {
 			Color = Color[Layer.ColorIndex] || AG.ColorSchema[0];
 		}
 
+		// Fix to legacy appearance data when Hands could be different to BodyUpper
+		if (GroupName === "Hands") Color = "Default";
+
 		// Check if we need to copy the color of another asset
 		let InheritColor = (Color == "Default" ? (Layer.InheritColor || A.InheritColor || AG.InheritColor) : null);
 		let ColorInherited = false;
@@ -184,10 +204,9 @@ function CommonDrawAppearanceBuild(C, {
 			}
 		}
 
-		let GroupName = A.DynamicGroupName;
 
 		// Before drawing hook, receives all processed data. Any of them can be overriden if returned inside an object.
-		// CAREFUL! The dynamic function should not contain heavy computations, and should not have any side effects. 
+		// CAREFUL! The dynamic function should not contain heavy computations, and should not have any side effects.
 		// Watch out for object references.
 		if (A.DynamicBeforeDraw && (!Player.GhostList || Player.GhostList.indexOf(C.MemberNumber) == -1)) {
 			const DrawingData = {
@@ -207,7 +226,7 @@ function CommonDrawAppearanceBuild(C, {
 							break;
 						}
 						case "GroupName": {
-							GroupName = OverridenData[key];
+							GroupName = OverriddenData[key];
 							break;
 						}
 						case "Color": {
@@ -253,51 +272,54 @@ function CommonDrawAppearanceBuild(C, {
 
 		// Adjust for the increased canvas size
 		Y += CanvasUpperOverflow;
-		AlphaMasks = AlphaMasks.map(([x, y, w, h]) => [x, y + CanvasUpperOverflow, w, h]);
+		AlphaMasks = AlphaMasks.map(([x, y, w, h]) => [x, y + CanvasUpperOverflow + YFixedOffset, w, h]);
 
-		const HideForPose = !!Pose && A.HideForPose.find(P => Pose === P + "/");
+		const Rotate = A.FixedPosition && C.IsInverted();
+
+		const HideForPose = !!Pose && (A.HideForPose.find(P => Pose === P + "/") || Layer.HideForPose.find(P => Pose === P + "/"));
+		const ItemLocked = !!(Property && Property.LockedBy);
 
 		if (!HideForPose) {
-			if (Layer.HasImage) {
+			if (Layer.HasImage && (!Layer.LockLayer || ItemLocked)) {
 				// Draw the item on the canvas (default or empty means no special color, # means apply a color, regular text means we apply
 				// that text)
 				if ((Color != null) && (Color.indexOf("#") == 0) && Layer.AllowColorize) {
 					drawImageColorize(
 						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + Expression + A.Name + G + LayerType + L + ".png", X, Y,
 						Color,
-						AG.DrawingFullAlpha, AlphaMasks, Opacity,
+						AG.DrawingFullAlpha, AlphaMasks, Opacity, Rotate
 					);
 					drawImageColorizeBlink(
 						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + BlinkExpression + A.Name + G + LayerType + L + ".png", X, Y,
-						Color, AG.DrawingFullAlpha, AlphaMasks, Opacity,
+						Color, AG.DrawingFullAlpha, AlphaMasks, Opacity, Rotate
 					);
 				} else {
 					var ColorName = ((Color == null) || (Color == "Default") || (Color == "") || (Color.length == 1) ||
-					                 (Color.indexOf("#") == 0)) ? "" : "_" + Color;
+						(Color.indexOf("#") == 0)) ? "" : "_" + Color;
 					drawImage(
 						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + Expression + A.Name + G + LayerType + ColorName + L + ".png",
 						X, Y,
-						AlphaMasks, Opacity,
+						AlphaMasks, Opacity, Rotate
 					);
 					drawImageBlink(
 						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + BlinkExpression + A.Name + G + LayerType + ColorName + L +
 						".png",
-						X, Y, AlphaMasks, Opacity,
+						X, Y, AlphaMasks, Opacity, Rotate
 					);
 				}
 			}
 
 			// If the item has been locked
-			if (Property && Property.LockedBy) {
-
+			if (ItemLocked && A.DrawLocks) {
 				// How many layers should be drawn for the asset
-				var DrawableLayerCount = C.AppearanceLayers.filter(AL => AL.Asset === A).length;
+				const DrawableLayerCount = C.AppearanceLayers.filter(AL => AL.Asset === A).length;
 
 				// If we just drew the last drawable layer for this asset, draw the lock too (never colorized)
 				if (DrawableLayerCount === LayerCounts[CountKey]) {
 					drawImage(
-						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + Expression + A.Name + (A.HasType ? Type : "") + "_Lock.png",
-						X, Y, AlphaMasks,
+						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + Expression + A.Name + (A.HasType ? Type : "") +
+						"_Lock.png",
+						X, Y, AlphaMasks
 					);
 					drawImageBlink(
 						"Assets/" + AG.Family + "/" + GroupName + "/" + Pose + BlinkExpression + A.Name + (A.HasType ? Type : "") +
@@ -307,7 +329,7 @@ function CommonDrawAppearanceBuild(C, {
 		}
 
 		// After drawing hook, receives all processed data.
-		// CAREFUL! The dynamic function should not contain heavy computations, and should not have any side effects. 
+		// CAREFUL! The dynamic function should not contain heavy computations, and should not have any side effects.
 		// Watch out for object references.
 		if (A.DynamicAfterDraw && (!Player.GhostList || Player.GhostList.indexOf(C.MemberNumber) == -1)) {
 			const DrawingData = {
@@ -345,7 +367,7 @@ function CommonDrawFindPose(C, AllowedPoses) {
 	var Pose = "";
 	if (AllowedPoses && AllowedPoses.length) {
 		AllowedPoses.forEach(AllowedPose => {
-			if (C.Pose.includes(AllowedPose)) Pose = AllowedPose + "/";
+			if (C.DrawPose.includes(AllowedPose)) Pose = AllowedPose + "/";
 		});
 	}
 	return Pose;

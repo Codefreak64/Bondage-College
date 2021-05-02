@@ -110,23 +110,23 @@ function GamblingToothpickCanPickThree() {return GamblingToothpickCount >= 3}
  * Checks, if the player is restrained with a locked item
  * @returns {boolean} - Returns true if a restraint is locked on the player, false otherwise
  */
-function GamblingIsRestrainedWithLock() { return InventoryCharacterHasLockedRestraint(Player) };
+function GamblingIsRestrainedWithLock() { return InventoryCharacterHasLockedRestraint(Player) }
 /**
  * Checks, wether the player is restrained but no lock is used
  * @returns {boolean} - Returns true, if the player is restarined, but no lock was used, false otherwise
  */
-function GamblingIsRestrainedWithoutLock() { return (Player.IsRestrained() && !InventoryCharacterHasLockedRestraint(Player)) };
+function GamblingIsRestrainedWithoutLock() { return (Player.IsRestrained() && !InventoryCharacterHasLockedRestraint(Player)) }
 
 /**
  * Checks, if the player owns enough money to pay for her release
  * @returns {boolean} - Returns true, if the player is not restrained with a lock and owns at least $25, false otherwise
  */
-function GamblingCanPayToRelease() { return ((Player.Money >= 25) && !InventoryCharacterHasLockedRestraint(Player)) };
+function GamblingCanPayToRelease() { return ((Player.Money >= 25) && !InventoryCharacterHasLockedRestraint(Player)) }
 /**
  * Checks, if the player is too poor to pay for her release
  * @returns {boolean} - Returns true, if the player is not restrained with a lock and owns less than $25, false otherwise
  */
-function GamblingCannotPayToRelease() { return ((Player.Money < 25) && !InventoryCharacterHasLockedRestraint(Player)) };
+function GamblingCannotPayToRelease() { return ((Player.Money < 25) && !InventoryCharacterHasLockedRestraint(Player)) }
 /**
  * Checks, if the player can steal the dice
  * @returns {boolean} - Returns true, if the player is able to steal the dice, false otherwise
@@ -186,7 +186,7 @@ function GamblingRun() {
 	if ((ReputationGet("Gambling") > 20) || MaidQuartersCurrentRescue == "Gambling") DrawCharacter(GamblingSecondSub, 1250, 0, 1);
 	if (Player.CanWalk()) DrawButton(1885, 25, 90, 90, "", "White", "Icons/Exit.png");
 	DrawButton(1885, 145, 90, 90, "", "White", "Icons/Character.png");
-	if (Player.CanInteract()) DrawButton(1885, 265, 90, 90, "", "White", "Icons/Dress.png"); //Only Dess Back after loose Game
+	if (Player.CanInteract()) DrawButton(1885, 265, 90, 90, "", "White", "Icons/DressReset.png"); //Only Dess Back after loose Game
 	//BadGirlsClub
 	if (GamblingCanStealDice()) DrawButton(1885, 385, 90, 90, "", "White", "Icons/DiceTheft.png", TextGet("DiceTheft"));
 }
@@ -863,6 +863,7 @@ function GamblingCompleteRescue() {
  */
 function GamblingStealDice() {
 	if (Math.random() < 0.25) {
+		LogAdd("Caught", "BadGirl");
 		PrisonMeetPoliceIntro("Gambling");
 	} else {
 		CharacterSetCurrent(Player);

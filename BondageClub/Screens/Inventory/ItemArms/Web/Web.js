@@ -13,8 +13,6 @@ var InventoryItemArmsWebOptions = [
 		Property: {
 			Type: "Wrapped",
 			Difficulty: 2,
-			Prerequisite: ["NoFeetSpreader"],
-			AllowPose: ["Kneel"],
 			SetPose: ["LegsClosed", "BackElbowTouch"],
 			Effect: ["Block", "Freeze", "Prone"],
 			Block: ["ItemTorso", "ItemHands", "ItemLegs", "ItemFeet", "ItemBoots"],
@@ -28,8 +26,6 @@ var InventoryItemArmsWebOptions = [
 		Property: {
 			Type: "Cocooned",
 			Difficulty: 4,
-			Prerequisite: ["NoFeetSpreader"],
-			AllowPose: ["Kneel"],
 			SetPose: ["LegsClosed", "BackElbowTouch"],
 			Effect: ["Block", "Freeze", "Prone"],
 			Block: ["ItemVulva", "ItemVulvaPiercings", "ItemButt", "ItemPelvis", "ItemTorso", "ItemHands", "ItemLegs", "ItemFeet", "ItemBoots", "ItemNipples", "ItemNipplesPiercings", "ItemBreast"],
@@ -131,7 +127,7 @@ function InventoryItemArmsWebPublishAction(C, Option, PreviousOption) {
 	var NewIndex = InventoryItemArmsWebOptions.indexOf(Option);
 	var PreviousIndex = InventoryItemArmsWebOptions.indexOf(PreviousOption);
 	var msg = "ArmsWebSet" + Option.Name;
-	var ActionDialog = DialogFind(Player, NewIndex > PreviousIndex ? "tightens" : "loosens", "ItemArms");
+	var ActionDialog = DialogFindPlayer(NewIndex > PreviousIndex ? "tightens" : "loosens");
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "TargetCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
@@ -141,9 +137,9 @@ function InventoryItemArmsWebPublishAction(C, Option, PreviousOption) {
 }
 
 /**
- * The NPC dialog is for what the NPC says to you when you make a change to their restraints - the dialog lookup is on a 
- * per-NPC basis. You basically put the "AssetName" + OptionName in there to allow individual NPCs to override their default 
- * "GroupName" dialog if for example we ever wanted an NPC to react specifically to having the restraint put on them. 
+ * The NPC dialog is for what the NPC says to you when you make a change to their restraints - the dialog lookup is on a
+ * per-NPC basis. You basically put the "AssetName" + OptionName in there to allow individual NPCs to override their default
+ * "GroupName" dialog if for example we ever wanted an NPC to react specifically to having the restraint put on them.
  * That could be done by adding an "AssetName" entry (or entries) to that NPC's dialog CSV
  * @param {Character} C - The NPC to whom the restraint is applied
  * @param {Option} Option - The chosen option for this extended item

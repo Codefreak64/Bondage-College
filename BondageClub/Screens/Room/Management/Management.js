@@ -375,7 +375,7 @@ function ManagementClick() {
 	if (MouseIn(250, 0, 500, 1000)) CharacterSetCurrent(Player);
 	if (MouseIn(750, 0, 500, 1000) && !ManagementEmpty) {		
 		if ((ManagementMistress.Stage == "0") && ManagementIsClubSlave()) ManagementMistress.Stage = "350";
-		if ((ManagementMistress.Stage == "0") && (ReputationGet("Dominant") < 50) && LogQuery("ClubMistress", "Management")) {
+		if ((ManagementMistress.Stage == "0") && (ReputationGet("Dominant") < 50) && (CheatFactor("CantLoseMistress", 0) == 1) && LogQuery("ClubMistress", "Management")) {
 			ManagementMistress.Stage = "500";
 			ManagementMistress.CurrentDialog = DialogFind(ManagementMistress, "MistressExpulsion");
 		}
@@ -528,7 +528,7 @@ function ManagementBreakTrialOnline() {
 		ServerSend("AccountOwnership", { MemberNumber: Player.Ownership.MemberNumber, Action: "Break" });
 		Player.Ownership = null;
 		for (let A = 0; A < Player.Appearance.length; A++)
-			ServerValidateProperties(Player, Player.Appearance[A]);
+			ValidationSanitizeProperties(Player, Player.Appearance[A]);
 	}
 }
 
@@ -579,7 +579,7 @@ function ManagementClubSlaveCollar(RepChange) {
  */
 function ManagementFinishClubSlave(RepChange) {
 	ReputationProgress("Dominant", RepChange);
-	CharacterChangeMoney(Player, 80);
+	CharacterChangeMoney(Player, 50);
 	if (Player.IsOwned() && !LogQuery("ReleasedCollar", "OwnerRule")) InventoryWear(Player, "SlaveCollar", "ItemNeck");
 	else {
 		InventoryRemove(Player, "ItemNeck");
@@ -764,7 +764,7 @@ function ManagementPlayerMistressCutscene() {
  */
 function ManagementMistressPay() {
 	LogAdd("MistressWasPaid", "Management", CurrentTime + 604800000);
-	CharacterChangeMoney(Player, 100);
+	CharacterChangeMoney(Player, 150);
 }
 
 /**

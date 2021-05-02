@@ -10,6 +10,7 @@ VisibilityPreferences,- Item Preferences -
 VFXPreferences,- Graphical Preferences -
 OnlinePreferences,- Online Preferences -
 ImmersionPreferences,- Immersion Preferences -
+ControllerPreferences,- Controller Preferences -
 NotificationsPreferences,- Notification Preferences -
 HomepageGeneral,General
 HomepageDifficulty,Difficulty
@@ -22,6 +23,7 @@ HomepageVisibility,Item Visibility
 HomepageOnline,Online
 HomepageImmersion,Immersion
 HomepageGraphics,Graphics
+HomepageController,Controller
 HomepageNotifications,Notifications
 DifficultyTitle,The difficulty mode enforces BDSM restrictions in multi-player only.  Click for details.
 DifficultyLevel0,Roleplay
@@ -64,6 +66,7 @@ RestrictionAccess,You can configure game restrictions to bypass in the multi-pla
 RestrictionNoAccess,Players using the Roleplay difficulty can configure multi-player restrictions to bypass.
 RestrictionBypassStruggle,Bypass the struggling mini-game.
 RestrictionSlowImmunity,Cannot be slowed down from leaving a room.
+RestrictionBypassNPCPunishments,Skip punishment when calling maids from chat room
 CharacterLabelColor,Character label color:
 ItemPermission,Item permission:
 PermissionLevel0,"Everyone, no exceptions"
@@ -103,16 +106,21 @@ AudioVolume,Audio volume
 AudioPlayBeeps,Audio alarm for beeps
 AudioPlayItem,Play item sounds in chatrooms
 AudioPlayItemPlayerOnly,Only play item sounds if you're involved
+AudioNotifications,Allow audio alerts for notifications
 ImmersionLockSetting,Lock this menu while bound
 ReturnToChatRoom,Return to chatrooms on relog
 ReturnToChatRoomAdmin,Auto-remake rooms
+SenseDepMessages,Hide others' messages
 ImmersionLocked,All immersion settings are maxed out under the Extreme difficulty mode
 BlockGaggedOOC,Prevent OOC & whispers while gagged
+StimulationEvents,Events while plugged or vibed
+ChatRoomMuffle,Garble chat room names and descriptions while blind
 SensDepSetting,Sensory deprivation setting
 SensDepLight,Light
 SensDepNames,Hide names
-SensDepTotal,Total
-SensDepExtreme,Total (no whispers)
+SensDepTotal,Heavy
+SensDepExtreme,Total
+DoBlindFlash,Flash after blindness
 AllowPlayerLeashing,"Players can drag you to rooms when leashed"
 DisableAutoMaid,Maids come automatically when restrained
 DisablePickingLocksOnSelf,Locks on you can't be picked
@@ -239,8 +247,42 @@ Georgia,Georgia
 CourierNew,Courier New
 Copperplate,Copperplate
 GraphicsInvertRoom,Flip the room vertically when upside-down
-NotificationsChatRooms,Raise notifications for:
-NotificationsBeeps,Missed beeps
-NotificationsChat,Unread messages in chat rooms
-NotificationsChatActions,Include item and arousal activity messages
-NotificationsReset,Reset Notifications
+GraphicsStimulationFlash,Screen filters when stimulated by events
+Sensitivity,Sensitivity
+ControllerActive,Controller Active
+MapButtons,Map Buttons
+MapSticks,Map Sticks
+MoveLeftStickUp,move left stick up
+MoveLeftStickRight,move left stick right
+PressA,Press A
+PressB,Press B
+PressX,Press X
+PressY,Press Y
+PressUpOnDpad,Press Up on Dpad
+PressDownOnDpad,Press Down on Dpad
+PressLeftOnDpad,Press Left on Dpad
+PressRightOnDpad,Press Right on Dpad
+DeadZone,Dead Zone
+NotificationsAlertType0,Off
+NotificationsAlertType1,(1) in title
+NotificationsAlertType2,Popup
+NotificationsAlertType3,(1) in icon
+NotificationsExplanation,Raise notifications for missed events:
+NotificationsAudioExplanation1,: Play a sound for only
+NotificationsAudioExplanation2,the first occurrence of an event
+NotificationsOnly,Only:
+NotificationsBeeps,Beeps
+NotificationsChatMessage,Messages in chat rooms
+NotificationsChatMessageNormal,Normal Messages
+NotificationsChatMessageWhisper,Whispers
+NotificationsChatMessageActivity,Items/Activities
+NotificationsChatJoin,Players entering chat rooms
+NotificationsChatJoinOwner,Owner
+NotificationsChatJoinLovers,Lovers
+NotificationsChatJoinFriendlist,Friends
+NotificationsChatJoinSubs,Owned Subs
+NotificationsDisconnect,Disconnect from the game
+NotificationsLarp,Your turn in a LARP game
+NotificationsTestRaise,Raise a test notification
+NotificationsTestReset,Clear raised notifications
+NotificationsTestMessage,Hello there!

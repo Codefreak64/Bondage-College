@@ -5,7 +5,7 @@ var InventoryItemMouthPumpGagOptions = [
 		Name: "Empty",
 		Property: {
 			Type: null,
-			InflateLevel: "0",
+			InflateLevel: 0,
 			Difficulty: 0,
 			Effect: ["BlockMouth"],
 		},
@@ -14,7 +14,7 @@ var InventoryItemMouthPumpGagOptions = [
 		Name: "Light",
 		Property: {
 			Type: "Light",
-			InflateLevel: "1",
+			InflateLevel: 1,
 			Difficulty: 2,
 			Effect: ["BlockMouth","GagLight"],
 		},
@@ -23,7 +23,7 @@ var InventoryItemMouthPumpGagOptions = [
 		Name: "Inflated",
 		Property: {
 			Type: "Inflated",
-			InflateLevel: "2",
+			InflateLevel: 2,
 			Difficulty: 4,
 			Effect: ["BlockMouth","GagEasy"],
 		},
@@ -32,7 +32,7 @@ var InventoryItemMouthPumpGagOptions = [
 		Name: "Bloated",
 		Property: {
 			Type: "Bloated",
-			InflateLevel: "3",
+			InflateLevel: 3,
 			Difficulty: 6,
 			Effect: ["BlockMouth","GagMedium"],
 		},
@@ -41,7 +41,7 @@ var InventoryItemMouthPumpGagOptions = [
 		Name: "Maximum",
 		Property: {
 			Type: "Maximum",
-			InflateLevel: "4",
+			InflateLevel: 4,
 			Difficulty: 8,
 			Effect: ["BlockMouth","GagVeryHeavy"],
 		},
@@ -60,7 +60,7 @@ function InventoryItemMouthPumpGagDraw() {
 
 // Catches the item extension clicks
 function InventoryItemMouthPumpGagClick() {
-	ExtendedItemClick(InventoryItemMouthPumpGagOptions, false, InventoryItemMouthPumpGagOptions.length, false);
+	ExtendedItemClick(InventoryItemMouthPumpGagOptions, InventoryItemMouthPumpGagOptions.length, false);
 }
 
 /**
@@ -73,7 +73,7 @@ function InventoryItemMouthPumpGagClick() {
 function InventoryItemMouthPumpGagPublishAction(C, Option, PreviousOption) {
 	var NewIndex = InventoryItemMouthPumpGagOptions.indexOf(Option);
 	var PreviousIndex = InventoryItemMouthPumpGagOptions.indexOf(PreviousOption);
-	var msg = "PumpGag" + ((NewIndex > PreviousIndex) ? "pumps" : "deflates") + "To" + Option.Property.InflateLevel;
+	var msg = "PumpGag" + ((NewIndex > PreviousIndex) ? "pumps" : "deflates") + "To" + Option.Property.InflateLevel.toString();
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
@@ -82,10 +82,10 @@ function InventoryItemMouthPumpGagPublishAction(C, Option, PreviousOption) {
 }
 
 /**
- * The NPC dialog is for what the NPC says to you when you make a change to their restraints - the dialog lookup is on a 
- * per-NPC basis. You basically put the "AssetName" + OptionName in there to allow individual NPCs to override their default 
- * "GroupName" dialog if for example we ever wanted an NPC to react specifically to having the restraint put on them. 
- * That could be done by adding an "AssetName" entry (or entries) to that NPC's dialog CSV
+ * The NPC dialog is for what the NPC says to you when you make a change to their restraints - the dialog lookup is on
+ * a  per-NPC basis. You basically put the "AssetName" + OptionName in there to allow individual NPCs to override their
+ * default "GroupName" dialog if for example we ever wanted an NPC to react specifically to having the restraint put on
+ * them. That could be done by adding an "AssetName" entry (or entries) to that NPC's dialog CSV
  * @param {Character} C - The NPC to whom the restraint is applied
  * @param {Option} Option - The chosen option for this extended item
  * @returns {void} - Nothing

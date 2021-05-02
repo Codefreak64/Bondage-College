@@ -61,7 +61,7 @@ function GameLARPIsAdmin(C) {
 		return (ChatRoomData.Admin.indexOf(C.MemberNumber) >= 0)
 	else
 		return (GameLARPTurnAdmin == C.MemberNumber);
-};
+}
 
 /**
  * Draws the LARP class/team icon of a character
@@ -137,7 +137,8 @@ function GameLARPRunProcess() {
 	if (GameLARPTurnFocusCharacter != null) {
 
 		// Draw the room dark background
-		DrawImageZoomCanvas("Backgrounds/" + ChatRoomData.Background + "Dark.jpg", MainCanvas, 500, 0, 1000, 1000, 0, 0, 1000, 1000);
+		DrawImageZoomCanvas("Backgrounds/" + ChatRoomData.Background + ".jpg", MainCanvas, 500, 0, 1000, 1000, 0, 0, 1000, 1000);
+		DrawRect(0, 0, 1000, 1000, "rgba(0,0,0," + 0.5 + ")");
 
 		// In inventory selection mode
 		if (GameLARPTurnFocusGroup != null) {
@@ -151,9 +152,12 @@ function GameLARPRunProcess() {
 			var X = 15;
 			var Y = 110;
 			for (let A = GameLARPInventoryOffset; (A < GameLARPInventory.length) && (A < GameLARPInventoryOffset + 12); A++) {
-				DrawRect(X, Y, 225, 275, ((MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile) ? "cyan" : "white");
-				DrawImageResize("Assets/" + Player.AssetFamily + "/" + GameLARPInventory[A].DynamicGroupName + "/Preview/" + GameLARPInventory[A].Name + ".png", X + 2, Y + 2, 221, 221);
-				DrawTextFit(GameLARPInventory[A].Description, X + 112, Y + 250, 221, "black");
+				const asset = GameLARPInventory[A];
+				const Hover = MouseIn(X, Y, 225, 275) && !CommonIsMobile;
+				const Hidden = CharacterAppearanceItemIsHidden(asset.Name, asset.Group.Name);
+				if (Hidden) DrawPreviewBox(X, Y, "Icons/HiddenItem.png", asset.Description, { Background: Hover ? "cyan" : "#fff" });
+				else DrawAssetPreview(X, Y, asset, {Hover: true});
+
 				X = X + 250;
 				if (X > 800) {
 					X = 15;
@@ -179,6 +183,8 @@ function GameLARPRunProcess() {
 
 	}
 
+	// Reset any notification that may have been raised
+	if (document.hasFocus()) NotificationReset(NotificationEventType.LARP);
 }
 
 /**
@@ -527,7 +533,7 @@ function GameLARPBuildOptionAbility(Source, Target, Option, Ability) {
 	if (Source.MemberNumber == Target.MemberNumber) {
 
 		// Abilities that can be used on yourself
-		var Odds = GameLARPGetOdds(Ability, Source, Source);
+		let Odds = GameLARPGetOdds(Ability, Source, Source);
 		if ((Ability == "Charge") && GameLARPCanWalk(Source)) Option.push({ Name: Ability, Odds: Odds });
 		if ((Ability == "Control") && GameLARPCanTalk(Source)) Option.push({ Name: Ability, Odds: Odds });
 		if (Ability == "Hide") Option.push({ Name: Ability, Odds: Odds });
@@ -538,7 +544,7 @@ function GameLARPBuildOptionAbility(Source, Target, Option, Ability) {
 	} else {
 
 		// If the player targets someone from her team
-		var Odds = GameLARPGetOdds(Ability, Source, Target);
+		let Odds = GameLARPGetOdds(Ability, Source, Target);
 		if (Source.Game.LARP.Team == Target.Game.LARP.Team) {
 
 			// Abilities that can be used on someone from your team
@@ -803,11 +809,15 @@ function GameLARPNewTurn(Msg) {
 	GameLARPTurnFocusGroup = null;
 
 	// Cycles in the game player array ascending or descending and shifts the position
-	if ((GameLARPTurnAscending) && (GameLARPTurnPosition < GameLARPPlayer.length - 1)) return GameLARPNewTurnPublish(GameLARPTurnPosition + 1, true, Msg);
-	if ((GameLARPTurnAscending) && (GameLARPTurnPosition == GameLARPPlayer.length - 1)) return GameLARPNewTurnPublish(GameLARPTurnPosition, false, Msg);
-	if ((!GameLARPTurnAscending) && (GameLARPTurnPosition > 0)) return GameLARPNewTurnPublish(GameLARPTurnPosition - 1, false, Msg);
-	if ((!GameLARPTurnAscending) && (GameLARPTurnPosition == 0)) return GameLARPNewTurnPublish(GameLARPTurnPosition, true, Msg);
+	if ((GameLARPTurnAscending) && (GameLARPTurnPosition < GameLARPPlayer.length - 1)) GameLARPNewTurnPublish(GameLARPTurnPosition + 1, true, Msg);
+	else if ((GameLARPTurnAscending) && (GameLARPTurnPosition == GameLARPPlayer.length - 1)) GameLARPNewTurnPublish(GameLARPTurnPosition, false, Msg);
+	else if ((!GameLARPTurnAscending) && (GameLARPTurnPosition > 0)) GameLARPNewTurnPublish(GameLARPTurnPosition - 1, false, Msg);
+	else if ((!GameLARPTurnAscending) && (GameLARPTurnPosition == 0)) GameLARPNewTurnPublish(GameLARPTurnPosition, true, Msg);
 
+	// Raise a notification if it's the player's turn and they're away
+	if (!document.hasFocus() && GameLARPPlayer[GameLARPTurnPosition].ID === 0) {
+		NotificationRaise(NotificationEventType.LARP);
+	}
 }
 
 /**

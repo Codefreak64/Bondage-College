@@ -1,5 +1,7 @@
 "use strict";
 
+var lastdarkfactor = 0;
+
 /**
 * Add a new item by group & name to character inventory
 * @param {Character} C - The character that gets the new item added to her inventory
@@ -38,11 +40,11 @@ function InventoryAddMany(C, NewItems, Push) {
 
 	// Return if data is invalid
 	if (C == null || !Array.isArray(NewItems)) return;
-	
+
 	var ShouldSync = false;
-	
+
 	// Add each items
-	for (let NI = 0; NI < NewItems.length; NI++) { 
+	for (let NI = 0; NI < NewItems.length; NI++) {
 		// First, we check if the item already exists in the inventory, continue if it's the case
 		var ItemExists = false;
 		for (let I = 0; I < C.Inventory.length; I++)
@@ -50,8 +52,8 @@ function InventoryAddMany(C, NewItems, Push) {
 				ItemExists = true;
 				break;
 			}
-		
-		if (!ItemExists) { 
+
+		if (!ItemExists) {
 			// Create the new item for current character's asset family, group name and item name
 			var NewItem = InventoryItemCreate(C, NewItems[NI].Group, NewItems[NI].Name);
 
@@ -63,7 +65,7 @@ function InventoryAddMany(C, NewItems, Push) {
 			}
 		}
 	}
-	
+
 	// Sends the new item(s) to the server if it's for the current player and an item was added
 	if ((C.ID == 0) && ((Push == null) || Push) && ShouldSync) ServerPlayerInventorySync();
 }
@@ -73,7 +75,8 @@ function InventoryAddMany(C, NewItems, Push) {
  * @param {Character} C - The character to create the item for
  * @param {string} Group - The name of the asset group the item belongs to
  * @param {string} Name - The name of the asset for the item
- * @return {Item} A new item for character using the specified asset name, or null if the specified asset could not be found in the named group
+ * @return {Item} A new item for character using the specified asset name, or null if the specified asset could not be
+ *     found in the named group
  */
 function InventoryItemCreate(C, Group, Name) {
 	var NewItemAsset = AssetGet(C.AssetFamily, Group, Name);
@@ -104,20 +107,32 @@ function InventoryDelete(C, DelItemName, DelItemGroup, Push) {
 }
 
 /**
-* Loads the current inventory for a character, can be loaded from an object of Name/Group or a compressed array using LZString
+* Loads the current inventory for a character, can be loaded from an object of Name/Group or a compressed array using
+* LZString
 * @param {Character} C - The character on which we should load the inventory
 * @param {Array} Inventory - An array of Name / Group of items to load
 */
 function InventoryLoad(C, Inventory) {
 	if (Inventory == null) return;
 	if (typeof Inventory === "string") {
-		var Inv = JSON.parse(LZString.decompressFromUTF16(Inventory));
-		for (let I = 0; I < Inv.length; I++)
-			InventoryAdd(C, Inv[I][0], Inv[I][1], false);
+		try {
+			var Inv = JSON.parse(LZString.decompressFromUTF16(Inventory));
+			for (let I = 0; I < Inv.length; I++)
+				InventoryAdd(C, Inv[I][0], Inv[I][1], false);
+		} catch(err) {
+			console.log("Error while loading compressed inventory, no inventory loaded.");
+		}
 	}
-	if (typeof Inventory === "object")
+	if (Array.isArray(Inventory)) {
 		for (let I = 0; I < Inventory.length; I++)
 			InventoryAdd(C, Inventory[I].Name, Inventory[I].Group, false);
+	} else if (typeof Inventory === "object") {
+		for (const G of Object.keys(Inventory)) {
+			for (const A of Inventory[G]) {
+				InventoryAdd(C, A, G, false);
+			}
+		}
+	}
 }
 
 /**
@@ -157,7 +172,7 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 		case "NotKneelingSpread": return C.Pose.includes("KneelingSpread") ? "MustStandUpFirst" : "";
 		case "NotChaste": return C.Effect.includes("Chaste") ? "RemoveChastityFirst" : "";
 		case "NotChained": return C.Effect.includes("IsChained") ? "RemoveChainForItem" : "";
-		case "NoFeetSpreader": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar"]) ? "CannotBeUsedWithFeetSpreader" : "";
+		case "NoFeetSpreader": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar", "FloorShackles"]) ? "CannotBeUsedWithFeetSpreader" : "";
 		case "NotShackled": return C.Effect.includes("Shackled") ? "RemoveShacklesFirst" : "";
 		case "Collared": return (InventoryGet(C, "ItemNeck") == null) ? "MustCollaredFirst" : "";
 		case "CannotHaveWand": return InventoryIsItemInList(C, "ItemArms", ["FullLatexSuit"]) ? "CannotHaveWand" : "";
@@ -169,7 +184,7 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 		case "CuffedFeet": return !C.Effect.includes("CuffedFeet") ? "MustBeFeetCuffedFirst" : "";
 		case "NoOuterClothes": return InventoryHasItemInAnyGroup(C, ["Cloth", "ClothLower"]) ? "RemoveClothesForItem" : "";
 		case "NoMaidTray": return InventoryIsItemInList(C, "ItemMisc", ["WoodenMaidTray", "WoodenMaidTrayFull"]) ? "CannotBeUsedWhileServingDrinks" : "";
-        case "CanBeCeilingTethered": return InventoryHasItemInAnyGroup(C, ["ItemArms", "ItemTorso", "ItemNeck", "ItemPelvis"]) ? "" : "AddItemsToUse";
+		case "CanBeCeilingTethered": return InventoryHasItemInAnyGroup(C, ["ItemArms", "ItemTorso", "ItemPelvis"]) ? "" : "AddItemsToUse";
 
 		// Checks for torso access based on clothes
 		case "AccessTorso": return !InventoryDoesItemExposeGroup(C, "Cloth", "ItemTorso") ? "RemoveClothesForItem" : "";
@@ -191,7 +206,7 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 		case "NakedHands": return InventoryHasItemInAnyGroup(C, ["ItemHands", "Gloves"]) ? "RemoveClothesForItem" : "";
 
 		// Toe Tied
-		case "ToeTied": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar"])
+		case "ToeTied": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar", "FloorShackles"])
 			|| InventoryIsItemInList(C, "ItemLegs", ["WoodenHorse"])
 			|| InventoryIsItemInList(C, "ItemDevices", ["OneBarPrison", "SaddleStand"])
 			? "LegsCannotClose" : "";
@@ -399,7 +414,7 @@ function InventoryLocked(C, AssetGroup, CheckProperties) {
 * @returns {void} - Nothing
 */
 function InventoryWearRandom(C, GroupName, Difficulty, Refresh, MustOwn) {
-	if (!InventoryLocked(C, GroupName)) {
+	if (!InventoryLocked(C, GroupName, true)) {
 		var IsClothes = false;
 
 		// Finds the asset group and make sure it's not blocked
@@ -429,10 +444,12 @@ function InventoryWearRandom(C, GroupName, Difficulty, Refresh, MustOwn) {
 }
 
 /**
- * Select a random asset from a group, narrowed to the most preferable available options (i.e unblocked/visible/unlimited) based on their binary "rank"
+ * Select a random asset from a group, narrowed to the most preferable available options (i.e
+ * unblocked/visible/unlimited) based on their binary "rank"
  * @param {Character} C - The character to pick the asset for
  * @param {String} GroupName - The asset group to pick the asset from. Set to an empty string to not filter by group.
- * @param {Array} AllowedAssets - Optional parameter: A list of assets from which one can be selected. If not provided, the full list of all assets is used.
+ * @param {Array} AllowedAssets - Optional parameter: A list of assets from which one can be selected. If not provided,
+ *     the full list of all assets is used.
  * @returns {Asset} - The randomly selected asset
  */
 function InventoryGetRandom(C, GroupName, AllowedAssets) {
@@ -444,7 +461,7 @@ function InventoryGetRandom(C, GroupName, AllowedAssets) {
 	var BlockedRank = Math.pow(2, 2);
 	var HiddenRank = Math.pow(2, 1);
 	var LimitedRank = Math.pow(2, 0);
-		
+
 	for (let A = 0; A < AssetList.length; A++)
 		if (((AssetList[A].Group.Name == GroupName && AssetList[A].Wear) || GroupName == null || GroupName == "") && (RandomOnly == false || AssetList[A].Random) && AssetList[A].Enable && InventoryAllow(C, AssetList[A].Prerequisite, false)) {
 			var CurrRank = 0;
@@ -483,6 +500,9 @@ function InventoryGetRandom(C, GroupName, AllowedAssets) {
 */
 function InventoryRemove(C, AssetGroup, Refresh) {
 
+	const lastblindlevel = Player.GetBlindLevel();
+	lastdarkfactor = CharacterGetDarkFactor(Player);
+
 	// First loop to find the item and any sub item to remove with it
 	for (var E = 0; E < C.Appearance.length; E++)
 		if (C.Appearance[E].Asset.Group.Name == AssetGroup) {
@@ -513,6 +533,13 @@ function InventoryRemove(C, AssetGroup, Refresh) {
 		if (C.Appearance[E].Asset.Group.Name == AssetGroup) {
 			C.Appearance.splice(E, 1);
 			if (Refresh || Refresh == null) CharacterRefresh(C);
+
+			if (Player.GraphicsSettings && Player.GraphicsSettings.DoBlindFlash) {
+				if (lastblindlevel > 0 && Player.GetBlindLevel() === 0) {
+					DrawBlindFlash(lastblindlevel);
+				}
+			}
+			
 			return;
 		}
 
@@ -522,17 +549,17 @@ function InventoryRemove(C, AssetGroup, Refresh) {
 * Returns TRUE if the body area (Asset Group) for a character is blocked and cannot be used
 * @param {Character} C - The character on which we validate the group
 * @param {String} GroupName - The name of the asset group (body area)
-* @param {Boolean} Activity - if TRUE check if activity is allowed on the asset group 
+* @param {Boolean} Activity - if TRUE check if activity is allowed on the asset group
 * @returns {Boolean} - TRUE if the group is blocked
 */
 function InventoryGroupIsBlocked(C, GroupName, Activity) {
 
 	if (Activity == null) Activity = false;
-	
+
 	// Default to characters focused group
 	if (GroupName == null) GroupName = C.FocusGroup.Name;
 
-    if (Activity) {
+	if (Activity) {
 		for (let E = 0; E < C.Appearance.length; E++) {
 			if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Asset.AllowActivityOn != null) && (C.Appearance[E].Asset.AllowActivityOn.includes(GroupName))){
 				Activity = true;
@@ -542,7 +569,7 @@ function InventoryGroupIsBlocked(C, GroupName, Activity) {
 				break;
 			} else Activity = false;
 		}
-    }
+	}
 
 	// Items can block each other (hoods blocks gags, belts blocks eggs, etc.)
 	for (let E = 0; E < C.Appearance.length; E++) {
@@ -569,19 +596,22 @@ function InventoryGroupIsBlocked(C, GroupName, Activity) {
 /**
 * Returns TRUE if an item has a specific effect
 * @param {AppearanceItem} Item - The item from appearance that must be validated
-* @param {String} Effect - The name of the effect to validate, can be undefined to check for any effect
-* @param {Boolean} CheckProperties - Set to TRUE to check for item extra properties
-* @returns {Boolean} - TRUE if the effect is on the item
+* @param {string} [Effect] - The name of the effect to validate, can be undefined to check for any effect
+* @param {boolean} [CheckProperties=true] - If properties should be checked (defaults to `true`)
+* @returns {boolean} `true` if the effect is on the item
 */
-function InventoryItemHasEffect(Item, Effect, CheckProperties) {
-	if (!Item) return null;
+function InventoryItemHasEffect(Item, Effect, CheckProperties = true) {
+	if (!Item) return false;
 	if (!Effect) {
-		if ((Item.Asset && Item.Asset.Effect && Item.Asset.Effect.length > 0) || (CheckProperties && Item.Property && Item.Property.Effect)) return true;
-		else return false;
-	}
-	else {
-		if ((Item.Asset && Item.Asset.Effect && Item.Asset.Effect.indexOf(Effect) >= 0) || (CheckProperties && Item.Property && Item.Property.Effect && Item.Property.Effect.indexOf(Effect) >= 0)) return true;
-		else return false;
+		return !!(
+			(Item.Asset && Array.isArray(Item.Asset.Effect) && Item.Asset.Effect.length > 0) ||
+			(CheckProperties && Item.Property && Array.isArray(Item.Property.Effect) && Item.Property.Effect.length > 0)
+		);
+	} else {
+		return !!(
+			(Item.Asset && Array.isArray(Item.Asset.Effect) && Item.Asset.Effect.includes(Effect)) ||
+			(CheckProperties && Item.Property && Array.isArray(Item.Property.Effect) && Item.Property.Effect.includes(Effect))
+		);
 	}
 }
 
@@ -592,15 +622,14 @@ function InventoryItemHasEffect(Item, Effect, CheckProperties) {
 */
 function InventoryItemIsPickable(Item) {
 	if (!Item) return null;
-	var lock = InventoryGetLock(Item)
+	var lock = InventoryGetLock(Item);
 	if (lock && lock.Asset && lock.Asset.PickDifficulty && lock.Asset.PickDifficulty > 0) return true;
 	else return false;
-	
 }
 
 /**
  * Returns the value of a given property of an appearance item, prioritizes the Property object.
- * @param {object} Item - The appearance item to scan 
+ * @param {object} Item - The appearance item to scan
  * @param {string} PropertyName - The property name to get.
  * @param {boolean} CheckGroup - Whether or not to fall back to the item's group if the property is not found on
  * Property or Asset.
@@ -608,11 +637,11 @@ function InventoryItemIsPickable(Item) {
  * item itself does not exist.
  */
 function InventoryGetItemProperty(Item, PropertyName, CheckGroup) {
-    if (!Item || !PropertyName || !Item.Asset) return;
-    let Property = Item.Property && Item.Property[PropertyName];
-    if (typeof Property === "undefined") Property = Item.Asset[PropertyName];
-    if (typeof Property === "undefined" && CheckGroup) Property = Item.Asset.Group[PropertyName];
-    return Property;
+	if (!Item || !PropertyName || !Item.Asset) return;
+	let Property = Item.Property && Item.Property[PropertyName];
+	if (typeof Property === "undefined") Property = Item.Asset[PropertyName];
+	if (typeof Property === "undefined" && CheckGroup) Property = Item.Asset.Group[PropertyName];
+	return Property;
 }
 
 /**
@@ -699,7 +728,8 @@ function InventoryCharacterIsWearingLock(C, LockName) {
 }
 
 /**
-* Returns TRUE if the character is wearing at least one item that's a restraint with a OwnerOnly flag, such as the owner padlock
+* Returns TRUE if the character is wearing at least one item that's a restraint with a OwnerOnly flag, such as the
+* owner padlock
 * @param {Character} C - The character to scan
 * @returns {Boolean} - TRUE if one owner only restraint is found
 */
@@ -713,7 +743,8 @@ function InventoryCharacterHasOwnerOnlyRestraint(C) {
 }
 
 /**
-* Returns TRUE if the character is wearing at least one item that's a restraint with a LoverOnly flag, such as the lover padlock
+* Returns TRUE if the character is wearing at least one item that's a restraint with a LoverOnly flag, such as the
+* lover padlock
 * @param {Character} C - The character to scan
 * @returns {Boolean} - TRUE if one lover only restraint is found
 */
@@ -740,13 +771,14 @@ function InventoryHasLockableItems(C) {
 }
 
 /**
-* Applies a lock to an appearance item of a character
-* @param {Character} C - The character on which the lock must be applied
-* @param {AppearanceItem} Item - The item from appearance to lock
-* @param {(Asset|String)} Lock - The asset of the lock or the name of the lock asset
-* @param {Int} MemberNumber - The member number to put on the lock
-*/
-function InventoryLock(C, Item, Lock, MemberNumber) {
+ * Applies a lock to an appearance item of a character
+ * @param {Character} C - The character on which the lock must be applied
+ * @param {AppearanceItem} Item - The item from appearance to lock
+ * @param {(Asset|String)} Lock - The asset of the lock or the name of the lock asset
+ * @param {number} MemberNumber - The member number to put on the lock
+ * @param {boolean} [Update] - Whether or not to update the character
+ */
+function InventoryLock(C, Item, Lock, MemberNumber, Update = true) {
 	if (typeof Item === 'string') Item = InventoryGet(C, Item);
 	if (typeof Lock === 'string') Lock = { Asset: AssetGet(C.AssetFamily, "ItemMisc", Lock) };
 	if (Item && Lock && Lock.Asset.IsLock) {
@@ -755,14 +787,14 @@ function InventoryLock(C, Item, Lock, MemberNumber) {
 				if (Item.Property == null) Item.Property = {};
 				if (Item.Property.Effect == null) Item.Property.Effect = [];
 				if (Item.Property.Effect.indexOf("Lock") < 0) Item.Property.Effect.push("Lock");
-				if (Item.Property.Effect.indexOf("MemberNumberList") < 0) {
-					if (!Item.Property) Item.Property = {}
-					if (!Item.Property.MemberNumberList) Item.Property.MemberNumberList = "" + MemberNumber
-				}
+
+				if (!Item.Property.MemberNumberListKeys && Lock.Asset.Name == "HighSecurityPadlock") Item.Property.MemberNumberListKeys = "" + MemberNumber;
 				Item.Property.LockedBy = Lock.Asset.Name;
 				if (MemberNumber != null) Item.Property.LockMemberNumber = MemberNumber;
-				if (Lock.Asset.RemoveTimer > 0) TimerInventoryRemoveSet(C, Item.Asset.Group.Name, Lock.Asset.RemoveTimer);
-				CharacterRefresh(C, true);
+				if (Update) {
+					if (Lock.Asset.RemoveTimer > 0) TimerInventoryRemoveSet(C, Item.Asset.Group.Name, Lock.Asset.RemoveTimer);
+					CharacterRefresh(C, true);
+				}
 			}
 		}
 	}
@@ -776,15 +808,7 @@ function InventoryLock(C, Item, Lock, MemberNumber) {
 function InventoryUnlock(C, Item) {
 	if (typeof Item === 'string') Item = InventoryGet(C, Item);
 	if (Item && Item.Property && Item.Property.Effect) {
-		Item.Property.Effect.splice(Item.Property.Effect.indexOf("Lock"), 1);
-		delete Item.Property.LockedBy;
-		delete Item.Property.RemoveTimer;
-		delete Item.Property.LockSet;
-		delete Item.Property.Password;
-		delete Item.Property.Hint;
-		delete Item.Property.LockMemberNumber;
-		delete Item.Property.MemberNumberList;
-		delete Item.Property.CombinationNumber;
+		ValidationDeleteLock(Item.Property, false);
 		CharacterRefresh(C);
 	}
 }
@@ -837,6 +861,7 @@ function InventoryConfiscateRemote() {
 	InventoryDelete(Player, "VibratorRemote", "ItemVulva");
 	InventoryDelete(Player, "VibratorRemote", "ItemNipples");
 	InventoryDelete(Player, "LoversVibratorRemote", "ItemVulva");
+	InventoryDelete(Player, "SpankingToysVibeRemote", "ItemHands");
 }
 
 /**
@@ -858,9 +883,9 @@ function InventoryIsWorn(C, AssetName, AssetGroup) {
  * Toggles an item's permission for the player
  * @param {object} Item - Appearance item to toggle
  * @param {object} Type - Type of the item to toggle
- * @returns {void} - Nothing 
+ * @returns {void} - Nothing
  */
-function InventoryTogglePermission(Item, Type) { 
+function InventoryTogglePermission(Item, Type) {
 	if (InventoryIsPermissionBlocked(Player, Item.Asset.Name, Item.Asset.Group.Name, Type)) {
 		Player.BlockItems = Player.BlockItems.filter(B => B.Name != Item.Asset.Name || B.Group != Item.Asset.Group.Name || B.Type != Type);
 		Player.LimitedItems.push({ Name: Item.Asset.Name, Group: Item.Asset.Group.Name, Type: Type });
@@ -869,7 +894,7 @@ function InventoryTogglePermission(Item, Type) {
 		Player.LimitedItems = Player.LimitedItems.filter(B => B.Name != Item.Asset.Name || B.Group != Item.Asset.Group.Name || B.Type != Type);
 	else
 		Player.BlockItems.push({ Name: Item.Asset.Name, Group: Item.Asset.Group.Name, Type: Type });
-	ServerSend("AccountUpdate", { BlockItems: Player.BlockItems, LimitedItems: Player.LimitedItems });
+	ServerPlayerBlockItemsSync();
 }
 
 /**
@@ -912,10 +937,23 @@ function InventoryIsPermissionLimited(C, AssetName, AssetGroup, AssetType) {
  * @returns {Boolean} - TRUE if item is allowed
  */
 function InventoryCheckLimitedPermission(C, Item, ItemType) {
-	if (!InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name, ItemType)) return true;
+	if (!InventoryIsPermissionLimited(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName, ItemType)) return true;
 	if ((C.ID == 0) || C.IsLoverOfPlayer() || C.IsOwnedByPlayer()) return true;
 	if ((C.ItemPermission < 3) && !(C.WhiteList.indexOf(Player.MemberNumber) < 0)) return true;
 	return false;
+}
+
+/**
+ * Returns TRUE if a specific item / asset is blocked or limited for the player by the character item permissions
+ * @param {Character} C - The character on which we check the permissions
+ * @param {Item} Item - The item being interacted with
+ * @param {String} [ItemType] - The asset type to scan
+ * @returns {Boolean} - Returns TRUE if the item cannot be used
+ */
+function InventoryBlockedOrLimited(C, Item, ItemType) {
+	let Blocked = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName, ItemType);
+	let Limited = !InventoryCheckLimitedPermission(C, Item, ItemType);
+	return Blocked || Limited;
 }
 
 /**
@@ -932,7 +970,8 @@ function InventoryIsKey(Item) {
 }
 
 /**
- * Serialises the provided character's inventory into a string for easy comparisons, inventory items are uniquely identified by their name and group
+ * Serialises the provided character's inventory into a string for easy comparisons, inventory items are uniquely
+ * identified by their name and group
  * @param {Character} C - The character whose inventory we should serialise
  * @return {string} - A simple string representation of the character's inventory
  */

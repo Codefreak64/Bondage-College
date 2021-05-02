@@ -6,10 +6,41 @@ var CurrentModule;
 var CurrentScreen;
 var CurrentCharacter = null;
 var CurrentOnlinePlayers = 0;
+var CurrentDarkFactor = 1.0;
 var CommonIsMobile = false;
 var CommonCSVCache = {};
 var CutsceneStage = 0;
-var Notifications = {};
+
+var CommonPhotoMode = false;
+var GameVersion = "R0";
+const GameVersionFormat = /^R([0-9]+)(?:(Alpha|Beta)([0-9]+)?)?$/;
+var CommonVersionUpdated = false;
+
+/**
+ * An enum encapsulating possible chatroom message substitution tags. Character name substitution tags are interpreted
+ * in chatrooms as follows (assuming the character name is Ben987):
+ * SOURCE_CHAR: "Ben987"
+ * DEST_CHAR: "Ben987's" (if character is not self), "her" (if character is self)
+ * DEST_CHAR_NAME: "Ben987's"
+ * TARGET_CHAR: "Ben987" (if character is not self), "herself" (if character is self)
+ * TARGET_CHAR_NAME: "Ben987"
+ * Additionally, sending the following tags will ensure that asset names in messages are correctly translated by
+ * recipients:
+ * ASSET_NAME: (substituted with the localized name of the asset, if available)
+ * @enum {string}
+ */
+const CommonChatTags = {
+	SOURCE_CHAR: "SourceCharacter",
+	DEST_CHAR: "DestinationCharacter",
+	DEST_CHAR_NAME: "DestinationCharacterName",
+	TARGET_CHAR: "TargetCharacter",
+	TARGET_CHAR_NAME: "TargetCharacterName",
+	ASSET_NAME: "AssetName",
+};
+
+String.prototype.replaceAt=function(index, character) {
+	return this.substr(0, index) + character + this.substr(index+character.length);
+};
 
 /**
  * A map of keys to common font stack definitions. Each stack definition is a
@@ -109,6 +140,8 @@ function CommonParseCSV(str) {
 	var quote = false;  // true means we're inside a quoted field
 	var c;
 	var col;
+	// We remove whitespace on start and end
+	str = str.replace(/\r\n/g, '\n').trim();
 
 	// iterate over each character, keep track of current row and column (of the returned array)
 	for (let row = col = c = 0; c < str.length; c++) {
@@ -230,9 +263,16 @@ function CommonKeyDown() {
 	if (CurrentCharacter == null) {
 		if (typeof window[CurrentScreen + "KeyDown"] === "function")
 			CommonDynamicFunction(CurrentScreen + "KeyDown()");
+		if (ControllerActive == true) {
+			ControllerSupportKeyDown();
+		}
 	}
-	else
-		DialogKeyDown();
+	else {
+		StruggleKeyDown();
+		if (ControllerActive == true) {
+			ControllerSupportKeyDown();
+		}
+	}
 }
 
 /**
@@ -268,7 +308,7 @@ function CommonDynamicFunctionParams(FunctionName) {
 	var closedParenthesisIndex = FunctionName.indexOf(")", openParenthesisIndex);
 	var Params = FunctionName.substring(openParenthesisIndex + 1, closedParenthesisIndex).split(",");
 	for (let P = 0; P < Params.length; P++)
-		Params[P] = Params[P].trim().replace('"', '').replace('"', '')
+		Params[P] = Params[P].trim().replace('"', '').replace('"', '');
 	FunctionName = FunctionName.substring(0, openParenthesisIndex);
 	if ((FunctionName.indexOf("Dialog") != 0) && (FunctionName.indexOf("Inventory") != 0) && (FunctionName.indexOf(CurrentScreen) != 0)) FunctionName = CurrentScreen + FunctionName;
 
@@ -335,13 +375,20 @@ function CommonCallFunctionByNameWarn(FunctionName/*, ...args */) {
  * @returns {void} - Nothing
  */
 function CommonSetScreen(NewModule, NewScreen) {
+	var prevScreen = CurrentScreen;
 	CurrentModule = NewModule;
 	CurrentScreen = NewScreen;
+	CurrentDarkFactor = 1.0;
 	CommonGetFont.clearCache();
 	CommonGetFontName.clearCache();
 	TextLoad();
 	if (typeof window[CurrentScreen + "Load"] === "function")
 		CommonDynamicFunction(CurrentScreen + "Load()");
+	if (prevScreen == "ChatSearch" || prevScreen == "ChatCreate")
+		ChatRoomStimulationMessage("Walk");
+	if (ControllerActive == true) {
+		ClearButtons();
+	}
 }
 
 /**
@@ -478,7 +525,7 @@ function CommonDebounce(func, wait) {
 	};
 }
 /**
- * Creates a simple memoizer. 
+ * Creates a simple memoizer.
  * The memoized function does calculate its result exactly once and from that point on, uses
  * the result stored in a local cache to speed up things.
  * @param {function} func - The function to memoize
@@ -505,7 +552,7 @@ function CommonMemoize(func) {
 	// add a clear cache method
 	memoized.clearCache = function () {
 		memo = {};
-	}
+	};
 	return memoized;
 } // CommonMemoize
 
@@ -541,43 +588,155 @@ const CommonGetFontName = CommonMemoize(() => {
 });
 
 /**
- * Increase the reported number of a notifications by one and updates the header
- * @param {string} Type - The type of notification
- * @returns {void}
- */
-function CommonNotificationIncrement(Type) {
-	Notifications[Type] = (Notifications[Type] || 0) + 1;
-	CommonNotificationUpdate();
-}
-
-/**
- * Sets the number of notifications for a type back to zero and updates the header
- * @param {any} Type - The type of notification
- * @returns {void}
- */
-function CommonNotificationReset(Type) {
-	if (Notifications[Type] != null && Notifications[Type] != 0) {
-		Notifications[Type] = 0;
-		CommonNotificationUpdate();
-	}
-}
-
-/**
- * Sets the number of notifications to zero
- * @returns {void}
- */
-function CommonNotificationResetAll() {
-	Notifications = {};
-	CommonNotificationUpdate();
-}
-
-/**
- * Sets or clears notifications in the tab header
+ * Take a screenshot of specified area in "photo mode" and open the image in a new tab
+ * @param {number} Left - Position of the area to capture from the left of the canvas
+ * @param {number} Top - Position of the area to capture from the top of the canvas
+ * @param {number} Width - Width of the area to capture
+ * @param {number} Height - Height of the area to capture
  * @returns {void} - Nothing
  */
-function CommonNotificationUpdate() {
-	let total = 0;
-	for (let key in Notifications) total += Notifications[key];
-	let prefix = total == 0 ? "" : "(" + total.toString() + ") ";
-	document.title = prefix + "Bondage Club";
+function CommonTakePhoto(Left, Top, Width, Height) {
+	CommonPhotoMode = true;
+
+	// Ensure everything is redrawn once in photo-mode
+	DrawProcess();
+
+	// Capture screen as image URL
+	const ImgData = document.getElementById("MainCanvas").getContext('2d').getImageData(Left, Top, Width, Height);
+	let PhotoCanvas = document.createElement('canvas');
+	PhotoCanvas.width = Width;
+	PhotoCanvas.height = Height;
+	PhotoCanvas.getContext('2d').putImageData(ImgData, 0, 0);
+	const PhotoImg = PhotoCanvas.toDataURL("image/png");
+
+	// Open the image in a new window
+	let newWindow = window.open('about:blank', '_blank');
+	newWindow.document.write("<img src='" + PhotoImg + "' alt='from canvas'/>");
+
+	CommonPhotoMode = false;
+}
+
+/**
+ * Takes an array of items and converts it to record format
+ * @param { { Group: string; Name: string; Type?: string|null }[] } arr The array of items
+ * @returns { { [group: string]: { [name: string]: string[] } } } Output in object foramat
+ */
+function CommonPackItemArray(arr) {
+	const res = {};
+	for (const I of arr) {
+		let G = res[I.Group];
+		if (G === undefined) {
+			G = res[I.Group] = {};
+		}
+		let A = G[I.Name];
+		if (A === undefined) {
+			A = G[I.Name] = [];
+		}
+		const T = I.Type || "";
+		if (!A.includes(T)) {
+			A.push(T);
+		}
+	}
+	return res;
+}
+
+/**
+ * Takes an record format of items and converts it to array
+ * @param { { [group: string]: { [name: string]: string[] } } } arr Object defining items
+ * @return { { Group: string; Name: string; Type?: string }[] } The array of items
+ */
+function CommonUnpackItemArray(arr) {
+	const res = [];
+	for (const G of Object.keys(arr)) {
+		for (const A of Object.keys(arr[G])) {
+			for (const T of arr[G][A]) {
+				res.push({ Group: G, Name: A, Type: T ? T : undefined });
+			}
+		}
+	}
+	return res;
+}
+
+/**
+ * Compares two version numbers and returns -1/0/1 if Other number is smaller/same/larger than Current one
+ * @param {string} Current Current version number
+ * @param {string} Other Other version number
+ * @returns {-1|0|1} Comparsion result
+ */
+function CommonCompareVersion(Current, Other) {
+	const CurrentMatch = GameVersionFormat.exec(Current);
+	const OtherMatch = GameVersionFormat.exec(Other);
+	if (CurrentMatch == null || OtherMatch == null || isNaN(CurrentMatch[1]) || isNaN(OtherMatch[1])) return -1;
+	const CurrentVer = [
+		Number.parseInt(CurrentMatch[1]),
+		CurrentMatch[2] === "Alpha" ? 1 : CurrentMatch[2] === "Beta" ? 2 : 3,
+		Number.parseInt(CurrentMatch[3]) || 0
+	];
+	const OtherVer = [
+		Number.parseInt(OtherMatch[1]),
+		OtherMatch[2] === "Alpha" ? 1 : OtherMatch[2] === "Beta" ? 2 : 3,
+		Number.parseInt(OtherMatch[3]) || 0
+	];
+	for (let i = 0; i < 3; i++) {
+		if (CurrentVer[i] !== OtherVer[i]) {
+			return Math.sign(OtherVer[i] - CurrentVer[i]);
+		}
+	}
+	return 0;
+}
+
+/**
+ * A simple deep equality check function which checks whether two objects are equal. The function traverses recursively
+ * into objects and arrays to check for equality. Primitives and simple types are considered equal as defined by `===`.
+ * @param {*} obj1 - The first object to compare
+ * @param {*} obj2 - The second object to compare
+ * @returns {boolean} - TRUE if both objects are equal, up to arbitrarily deeply nested property values, FALSE
+ * otherwise.
+ */
+function CommonDeepEqual(obj1, obj2) {
+	if (obj1 === obj2) {
+		return true;
+	}
+
+	if (obj1 && obj2 && typeof obj1 === "object" && typeof obj2 === "object") {
+		// If the objects do not share a prototype, they are not equal
+		if (Object.getPrototypeOf(obj1) !== Object.getPrototypeOf(obj2)) {
+			return false;
+		}
+
+		// Get the keys for the objects
+		const keys1 = Object.keys(obj1);
+		const keys2 = Object.keys(obj2);
+
+		// If the objects have different numbers of keys, they are not equal
+		if (keys1.length !== keys2.length) {
+			return false;
+		}
+
+		// Sort the keys
+		keys1.sort();
+		keys2.sort();
+		return keys1.every((key, i) => {
+			// If the keys are different, the objects are not equal
+			if (key !== keys2[i]) {
+				return false;
+			}
+			// Otherwise, compare the values
+			return CommonDeepEqual(obj1[key], obj2[key]);
+		});
+	}
+
+	return false;
+}
+
+/**
+ * Adds all items from the source array to the destination array if they aren't already included
+ * @param {*[]} dest - The destination array
+ * @param {*[]} src - The source array
+ * @returns {void} - Nothing
+ */
+function CommonArrayConcatDedupe(dest, src) {
+	src.forEach(item => {
+		if (!dest.includes(item)) dest.push(item);
+	});
 }

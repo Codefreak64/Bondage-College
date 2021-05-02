@@ -1,5 +1,5 @@
 "use strict";
-var ChatCreateBackground = "IntroductionDark";
+var ChatCreateBackground = "Introduction";
 var ChatCreateResult = [];
 var ChatCreateMessage = "";
 var ChatCreatePrivate = null;
@@ -13,6 +13,8 @@ var ChatCreateBackgroundList = null;
  */
 function ChatCreateLoad() {
 
+	CurrentDarkFactor = 0.5;
+
 	// Resets the room game statuses
 	if ((ChatRoomGame == "LARP") && (Player.Game.LARP.Status != "")) {
 		Player.Game.LARP.Status = "";
@@ -25,7 +27,7 @@ function ChatCreateLoad() {
 		ChatCreateBackgroundIndex = 0;
 	}
 	ChatCreateBackgroundSelect = ChatCreateBackgroundList[ChatCreateBackgroundIndex];
-	ChatCreateBackground = ChatCreateBackgroundSelect + "Dark";
+	ChatCreateBackground = ChatCreateBackgroundSelect;
 
 	// Prepares the controls to create a room
 	ElementRemove("InputSearch");
@@ -58,9 +60,9 @@ function ChatCreateRun() {
 	ElementPosition("InputSize", 1400, 560, 150);
 	DrawText(TextGet("RoomBackground"), 650, 672, "White", "Gray");
 	DrawButton(1300, 640, 300, 65, TextGet("ShowAll"), "White");
-	DrawBackNextButton(900, 640, 350, 65, DialogFind(Player, ChatCreateBackgroundSelect), "White", null,
-		() => DialogFind(Player, (ChatCreateBackgroundIndex == 0) ? ChatCreateBackgroundList[ChatCreateBackgroundList.length - 1] : ChatCreateBackgroundList[ChatCreateBackgroundIndex - 1]),
-		() => DialogFind(Player, (ChatCreateBackgroundIndex >= ChatCreateBackgroundList.length - 1) ? ChatCreateBackgroundList[0] : ChatCreateBackgroundList[ChatCreateBackgroundIndex + 1]));
+	DrawBackNextButton(900, 640, 350, 65, DialogFindPlayer(ChatCreateBackgroundSelect), "White", null,
+		() => DialogFindPlayer((ChatCreateBackgroundIndex == 0) ? ChatCreateBackgroundList[ChatCreateBackgroundList.length - 1] : ChatCreateBackgroundList[ChatCreateBackgroundIndex - 1]),
+		() => DialogFindPlayer((ChatCreateBackgroundIndex >= ChatCreateBackgroundList.length - 1) ? ChatCreateBackgroundList[0] : ChatCreateBackgroundList[ChatCreateBackgroundIndex + 1]));
 	DrawButton(850, 775, 300, 65, TextGet("BlockItems"), "White");
 	DrawButton(600, 900, 300, 65, TextGet("Create"), "White");
 	DrawButton(1100, 900, 300, 65, TextGet("Cancel"), "White");
@@ -82,7 +84,7 @@ function ChatCreateClick() {
 		if (ChatCreateBackgroundIndex >= ChatCreateBackgroundList.length) ChatCreateBackgroundIndex = 0;
 		if (ChatCreateBackgroundIndex < 0) ChatCreateBackgroundIndex = ChatCreateBackgroundList.length - 1;
 		ChatCreateBackgroundSelect = ChatCreateBackgroundList[ChatCreateBackgroundIndex];
-		ChatCreateBackground = ChatCreateBackgroundSelect + "Dark";
+		ChatCreateBackground = ChatCreateBackgroundSelect;
 	}
 
 	// Show backgrounds in grid

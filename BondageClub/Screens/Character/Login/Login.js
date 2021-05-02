@@ -4,11 +4,12 @@ var LoginMessage = "";
 var LoginCredits = null;
 var LoginCreditsPosition = 0;
 var LoginThankYou = "";
-var LoginThankYouList = ["Abby", "Anna", "Aylea", "BlueEyedCat", "BlueWinter", "Brian", "Bryce", "Christian", "Dini", "EliseBlackthorn",
-						 "Epona", "Escurse", "FanRunner", "Fluffythewhat", "Greendragon", "Jin", "KamiKaze", "KBgamer", "Kimuriel", "Longwave",
-						 "Michal", "Michel", "Mike", "Mindtie", "Misa", "Mzklopyu", "Nick", "Nightcore", "Overlord", "Ramtam",
-						 "Rashiash", "Ray", "Rika", "Rutherford", "Ryner", "Samuel", "Sayari", "SeraDenoir", "Shadow", "Somononon", 
-						 "Stephanie", "Tam", "Trent", "Troubadix", "William", "Xepherio", "Yurei"];
+var LoginThankYouList = [
+	"Anna", "Aylea", "BlueEyedCat", "BlueWinter", "Brian", "Bryce", "Christian", "Dini", "Elise", "Epona",
+	"Escurse", "FanRunner", "Flux", "Greendragon", "KamiKaze", "KBgamer", "Kimuriel", "Longwave", "Michal", "Michel",
+	"Mike", "Mindtie", "Misa", "MrUniver", "Mzklopyu", "Nick", "Nightcore", "Overlord", "Rashiash", "Ray",
+	"Rika", "Robin", "Rutherford", "Ryner", "Samuel", "SeraDenoir", "Shadow", "Somononon", "Stephanie", "Tam",
+	"TopHat", "Trent", "Troubadix", "William", "Xepherio", "Yurei", "Znarf"];
 var LoginThankYouNext = 0;
 var LoginSubmitted = false;
 var LoginIsRelog = false;
@@ -148,8 +149,8 @@ function LoginRun() {
  * @returns {void} Nothing
  */
 function LoginValidCollar() {
- 	if ((InventoryGet(Player, "ItemNeck") != null) && (InventoryGet(Player, "ItemNeck").Asset.Name == "SlaveCollar") && (Player.Owner == "" || LogQuery("ReleasedCollar", "OwnerRule"))) {
- 		InventoryRemove(Player, "ItemNeck");
+	if ((InventoryGet(Player, "ItemNeck") != null) && (InventoryGet(Player, "ItemNeck").Asset.Name == "SlaveCollar") && (Player.Owner == "" || LogQuery("ReleasedCollar", "OwnerRule"))) {
+		InventoryRemove(Player, "ItemNeck");
 		if (CurrentScreen == "ChatRoom") {
 			ChatRoomCharacterItemUpdate(Player, "ItemNeck");
 			ChatRoomCharacterItemUpdate(Player, "ItemNeckAccessories");
@@ -166,6 +167,8 @@ function LoginValidCollar() {
 			if (CurrentScreen == "ChatRoom") ChatRoomCharacterItemUpdate(Player, "ItemNeck");
 		}
 	}
+	if (LogQuery("ClubSlave", "Management") && !InventoryIsWorn(Player, "ItemNeck", "ClubSlaveCollar"))
+		InventoryWear(Player, "ClubSlaveCollar", "ItemNeck");
 }
 
 /**
@@ -182,6 +185,7 @@ function LoginMistressItems() {
 		InventoryAdd(Player, "MistressPadlock", "ItemMisc", false);
 		InventoryAdd(Player, "MistressPadlockKey", "ItemMisc", false);
 		InventoryAdd(Player, "MistressTimerPadlock", "ItemMisc", false);
+		InventoryAdd(Player, "DeluxeBoots", "Shoes", false);
 	} else {
 		InventoryDelete(Player, "MistressPadlock", "ItemMisc", false);
 		InventoryDelete(Player, "MistressPadlockKey", "ItemMisc", false);
@@ -190,6 +194,7 @@ function LoginMistressItems() {
 		InventoryDelete(Player, "MistressBoots", "Shoes", false);
 		InventoryDelete(Player, "MistressTop", "Cloth", false);
 		InventoryDelete(Player, "MistressBottom", "ClothLower", false);
+		InventoryDelete(Player, "DeluxeBoots", "Shoes", false);
 	}
 }
 
@@ -264,6 +269,14 @@ function LoginAsylumItems() {
 }
 
 /**
+ * Adds items if specific cheats are enabled
+ * @returns {void} - Nothing
+ */
+function LoginCheatItems() {
+	if (CheatFactor("FreeCollegeOutfit", 0) == 0) InventoryAdd(Player, "CollegeOutfit1", "Cloth");
+}
+
+/**
  * Checks every owned item to see if its BuyGroup contains an item the player does not have. This allows the player to
  * collect any items that have been added to the game which are in a BuyGroup that they have already purchased.
  * @returns {void} Nothing
@@ -281,23 +294,26 @@ function LoginValideBuyGroups() {
  * @returns {void} Nothing
  */
 function LoginValidateArrays() {
+	let update = false;
 	var CleanBlockItems = AssetCleanArray(Player.BlockItems);
 	if (CleanBlockItems.length != Player.BlockItems.length) {
 		Player.BlockItems = CleanBlockItems;
-		ServerSend("AccountUpdate", { BlockItems: Player.BlockItems });
+		update = true;
 	}
 
 	var CleanLimitedItems = AssetCleanArray(Player.LimitedItems);
 	if (CleanLimitedItems.length != Player.LimitedItems.length) {
 		Player.LimitedItems = CleanLimitedItems;
-		ServerSend("AccountUpdate", { LimitedItems: Player.LimitedItems });
+		update = true;
 	}
 
 	var CleanHiddenItems = AssetCleanArray(Player.HiddenItems);
 	if (CleanHiddenItems.length != Player.HiddenItems.length) {
 		Player.HiddenItems = CleanHiddenItems;
-		ServerSend("AccountUpdate", { HiddenItems: Player.HiddenItems });
+		update = true;
 	}
+	if (update)
+		ServerPlayerBlockItemsSync();
 }
 
 /**
@@ -309,7 +325,7 @@ function LoginDifficulty() {
 	// If Extreme mode, the player cannot control her blocked items
 	if (Player.GetDifficulty() >= 3) {
 		LoginExtremeItemSettings();
-		ServerSend("AccountUpdate", { BlockItems: Player.BlockItems, LimitedItems: Player.LimitedItems, HiddenItems: Player.HiddenItems });
+		ServerPlayerBlockItemsSync();
 	}
 }
 
@@ -324,6 +340,15 @@ function LoginExtremeItemSettings() {
 	Player.HiddenItems = [];
 }
 
+/**
+ * Handles server response, when login has been queued
+ * @param {number} Pos The position in queue
+ */
+function LoginQueue(Pos) {
+	if (typeof Pos !== "number") return;
+
+	LoginMessage = TextGet("LoginQueueWait").replace("QUEUE_POS", Pos);
+}
 
 /**
  * Handles player login response data
@@ -380,13 +405,20 @@ function LoginResponse(C) {
 			WardrobeFixLength();
 			Player.OnlineID = C.ID.toString();
 			Player.MemberNumber = C.MemberNumber;
-			Player.BlockItems = ((C.BlockItems == null) || !Array.isArray(C.BlockItems)) ? [] : C.BlockItems;
-			Player.LimitedItems = ((C.LimitedItems == null) || !Array.isArray(C.LimitedItems)) ? [] : C.LimitedItems;
+			Player.BlockItems = Array.isArray(C.BlockItems) ? C.BlockItems :
+				typeof C.BlockItems === "object" && C.BlockItems ? CommonUnpackItemArray(C.BlockItems) : [];
+			Player.LimitedItems = Array.isArray(C.LimitedItems) ? C.LimitedItems :
+				typeof C.LimitedItems === "object" && C.LimitedItems ? CommonUnpackItemArray(C.LimitedItems) : [];
 			Player.HiddenItems = ((C.HiddenItems == null) || !Array.isArray(C.HiddenItems)) ? [] : C.HiddenItems;
+			// TODO: Migration code; remove after few versions (added R66)
+			if (Array.isArray(C.BlockItems) || Array.isArray(C.LimitedItems)) {
+				ServerPlayerBlockItemsSync();
+			}
+
 			Player.Difficulty = C.Difficulty;
 			Player.WardrobeCharacterNames = C.WardrobeCharacterNames;
 			WardrobeCharacter = [];
-			
+
 			// Load the last chat room
 			Player.LastChatRoom = C.LastChatRoom;
 			Player.LastChatRoomBG = C.LastChatRoomBG;
@@ -412,17 +444,28 @@ function LoginResponse(C) {
 			// Gets the online preferences
 			Player.LabelColor = C.LabelColor;
 			Player.ItemPermission = C.ItemPermission;
+			Player.KinkyDungeonKeybindings = C.KinkyDungeonKeybindings;
+			Player.ArousalSettings = C.ArousalSettings;
 			Player.ChatSettings = C.ChatSettings;
 			Player.VisualSettings = C.VisualSettings;
 			Player.AudioSettings = C.AudioSettings;
+			Player.ControllerSettings = C.ControllerSettings;
 			Player.GameplaySettings = C.GameplaySettings;
 			Player.ImmersionSettings = C.ImmersionSettings;
 			Player.RestrictionSettings = C.RestrictionSettings;
-			Player.ArousalSettings = C.ArousalSettings;
 			Player.OnlineSettings = C.OnlineSettings;
 			Player.OnlineSharedSettings = C.OnlineSharedSettings;
 			Player.GraphicsSettings = C.GraphicsSettings;
 			Player.NotificationSettings = C.NotificationSettings;
+			Player.SavedExpressions = C.SavedExpressions;
+			if (!Array.isArray(Player.SavedExpressions)) {
+				Player.SavedExpressions = [];
+			}
+			if (Player.SavedExpressions.length < 5) {
+				for (let x = Player.SavedExpressions.length; x < 5; x++) {
+					Player.SavedExpressions.push(null);
+				}
+			}
 			Player.WhiteList = ((C.WhiteList == null) || !Array.isArray(C.WhiteList)) ? [] : C.WhiteList;
 			Player.BlackList = ((C.BlackList == null) || !Array.isArray(C.BlackList)) ? [] : C.BlackList;
 			Player.FriendList = ((C.FriendList == null) || !Array.isArray(C.FriendList)) ? [] : C.FriendList;
@@ -439,23 +482,25 @@ function LoginResponse(C) {
 			}
 			Player.SubmissivesList = typeof C.SubmissivesList === "string" ? new Set(JSON.parse(LZString.decompressFromUTF16(C.SubmissivesList))) : new Set();
 			Player.GhostList = ((C.GhostList == null) || !Array.isArray(C.GhostList)) ? [] : C.GhostList;
+			Player.Infiltration = C.Infiltration;
 			LoginDifficulty();
 
 			// Loads the player character model and data
-			Player.Appearance = ServerAppearanceLoadFromBundle(Player, C.AssetFamily, C.Appearance);
+			ServerAppearanceLoadFromBundle(Player, C.AssetFamily, C.Appearance, C.MemberNumber)
 			InventoryLoad(Player, C.Inventory);
 			LogLoad(C.Log);
 			ReputationLoad(C.Reputation);
 			SkillLoad(C.Skill);
 
 			// Calls the preference init to make sure the preferences are loaded correctly
-			PreferenceInit(Player);
+			PreferenceInitPlayer();
 			if (Player.VisualSettings) {
 				if (Player.VisualSettings.PrivateRoomBackground) PrivateBackground = Player.VisualSettings.PrivateRoomBackground;
 				if (Player.VisualSettings.MainHallBackground) MainHallBackground = Player.VisualSettings.MainHallBackground;
 			}
 			ActivitySetArousal(Player, 0);
 			ActivityTimerProgress(Player, 0);
+			NotificationLoad();
 
 			// Loads the dialog and removes the login controls
 			CharacterLoadCSVDialog(Player);
@@ -484,6 +529,7 @@ function LoginResponse(C) {
 			LoginStableItems();
 			LoginLoversItems();
 			LoginAsylumItems();
+			LoginCheatItems();
 			LoginValideBuyGroups();
 			LoginValidateArrays();
 			if (InventoryBeforeFixes != InventoryStringify(Player)) ServerPlayerInventorySync();
@@ -590,7 +636,7 @@ function LoginDoLogin() {
 		var Password = ElementValue("InputPassword");
 		var letters = /^[a-zA-Z0-9]+$/;
 		if (Name.match(letters) && Password.match(letters) && (Name.length > 0) && (Name.length <= 20) && (Password.length > 0) && (Password.length <= 20)) {
-		    LoginSetSubmitted();
+			LoginSetSubmitted();
 			ServerSend("AccountLogin", { AccountName: Name, Password: Password });
 		} else LoginStatusReset("InvalidNamePassword");
 	}
