@@ -622,6 +622,27 @@ var AssetFemale3DCGExtended = {
 				},
 			},
 		}, // FunnelGag
+		PonyBit: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{
+						Name: "Detached",
+						Proporty: {
+							Type: null,
+							Effect: ["OpenMouth"]
+						},
+					},
+					{
+						Name: "Attached",
+						Proporty: {
+							Type: "Attached",
+							Effect: ["BlockMouth", "GagLight"]
+						},
+					},
+				],
+			},
+		}, // PonyBit
 	}, // ItemMouth
 	ItemMouth2: {
 		ClothGag: {
