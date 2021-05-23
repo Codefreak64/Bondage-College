@@ -2905,7 +2905,7 @@ var AssetFemale3DCG = [
 			{
 				Name: "HarnessPonyBits", Fetish: ["Leather", "Pony"], Value: -1, Difficulty: 4, Time: 20, Random: false, AllowLock: true, BuyGroup: "HarnessPonyBits", Prerequisite: "GagUnique", Extended: true, AlwaysExtend: true, Bonus: "KidnapBruteForce",
 				Layer: [
-					{ Name: "Metal", AllowTypes: ["Detached"]},
+					{ Name: "Metal"},
 					{ Name: "Straps", HasType: false},
 					{ Name: "Bobble", HasType: false},
 				]

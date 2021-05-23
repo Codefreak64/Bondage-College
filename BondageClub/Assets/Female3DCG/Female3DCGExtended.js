@@ -629,14 +629,14 @@ var AssetFemale3DCGExtended = {
 					{
 						Name: "Detached",
 						Property: {
-							Type: null,
+							Type: "Detached",
 							Effect: ["OpenMouth"]
 						},
 					},
 					{
 						Name: "Attached",
 						Property: {
-							Type: "Attached",
+							Type: null,
 							Effect: ["BlockMouth", "GagLight"]
 						},
 					},
