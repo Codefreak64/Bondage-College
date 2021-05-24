@@ -223,6 +223,28 @@ function LoginStableItems() {
 }
 
 /**
+ * Adds or confiscates maid items from the player. Only players that have joined the Maid Sorority can have these items.
+ * @returns {void} - Nothing
+ */
+function LoginMaidItems() {
+	if (LogQuery("JoinedSorority", "Maid")) {
+		InventoryAdd(Player, "MaidOutfit1", "Cloth", false);
+		InventoryAdd(Player, "MaidOutfit2", "Cloth", false);
+		InventoryAdd(Player, "MaidHairband1", "Cloth", false);
+		InventoryAdd(Player, "MaidApron1", "Cloth", false);
+		InventoryAdd(Player, "MaidHairband1", "Hat", false);
+		InventoryAdd(Player, "ServingTray", "ItemMisc", false);
+	} else {
+		InventoryDelete(Player, "MaidOutfit1", "Cloth", false);
+		InventoryDelete(Player, "MaidOutfit2", "Cloth", false);
+		InventoryDelete(Player, "MaidHairband1", "Cloth", false);
+		InventoryDelete(Player, "MaidApron1", "Cloth", false);
+		InventoryDelete(Player, "MaidHairband1", "Hat", false);
+		InventoryDelete(Player, "ServingTray", "ItemMisc", false);
+	}
+}
+
+/**
  * Ensures lover-exclusive items are removed if the player has no lovers.
  * @returns {void} Nothing
  */
@@ -526,6 +548,7 @@ function LoginResponse(C) {
 			LoginValidCollar();
 			LoginMistressItems();
 			LoginStableItems();
+			LoginMaidItems();
 			LoginLoversItems();
 			LoginAsylumItems();
 			LoginCheatItems();

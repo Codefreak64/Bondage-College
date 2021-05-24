@@ -2443,20 +2443,21 @@ function ChatRoomSyncItem(data) {
 			} else {
 				InventoryRemove(ChatRoomCharacter[C], data.Item.Group);
 			}
-			CharacterRefresh(ChatRoomCharacter[C], false);
-
-
-			// Keeps the change in the chat room data and allows the character to be updated again
-			for (let R = 0; R < ChatRoomData.Character.length; R++)
-				if (ChatRoomData.Character[R].MemberNumber == data.Item.Target)
-					ChatRoomData.Character[R].Appearance = ChatRoomCharacter[C].Appearance;
-			ChatRoomAllowCharacterUpdate = true;
 
 			// If the update was invalid, send a correction update
 			if (ChatRoomCharacter[C].ID === 0 && !valid) {
 				console.warn(`Invalid appearance update to group ${data.Item.Group}. Updating with sanitized appearance.`);
 				ChatRoomCharacterUpdate(ChatRoomCharacter[C]);
+			} else {
+				CharacterRefresh(ChatRoomCharacter[C]);
 			}
+
+			// Keeps the change in the chat room data and allows the character to be updated again
+			for (let R = 0; R < ChatRoomData.Character.length; R++) {
+				if (ChatRoomData.Character[R].MemberNumber == data.Item.Target)
+					ChatRoomData.Character[R].Appearance = ChatRoomCharacter[C].Appearance;
+			}
+			ChatRoomAllowCharacterUpdate = true;
 
 			return;
 		}
