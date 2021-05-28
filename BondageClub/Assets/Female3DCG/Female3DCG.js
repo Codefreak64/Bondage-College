@@ -398,14 +398,27 @@ var AssetFemale3DCG = [
 		PreviewZone: [0, 450, 500, 500],
 		Asset: [
 			{
-				Name: "Catsuit", Fetish: ["Latex"], Value: -1, BuyGroup: "Catsuit", Hide: ["ItemVulvaPiercings"], HideItem: ["SocksPantyhose1"],
+				Name: "Catsuit", Fetish: ["Latex"], Value: -1, BuyGroup: "Catsuit", Hide: ["ItemVulvaPiercings"], 
+				HideItem: [
+					"SocksPantyhose1","ItemVulvaClitoralStimulator","ItemVulvaClitSuctionCup", "ItemVulvaClitAndDildoVibratorbelt", 
+					"ItemVulvaInflatableVibeDildo", "ItemVulvaShockDildo", "ItemVulvaVibratingDildo", "ItemVulvaHeavyWeightClamp"
+				],
 				Layer: [
 					{ Name: "Base" },
 					{ Name: "Zip" }
 				]
 			},
-			{ Name: "SeamlessCatsuit", Fetish: ["Latex"], Value: -1, BuyGroup: "Catsuit", Hide: ["ItemVulvaPiercings"], HideItem: ["SocksPantyhose1"] },
-			{ Name: "PilotSuit", Fetish: ["Latex"], Value: -1, BuyGroup: "PilotSuit", DefaultColor: ["#3270C1", "#2B408B", "#969696", "#282828"], Hide: ["ItemVulvaPiercings"], HideItem: ["SocksPantyhose1"],
+			{ Name: "SeamlessCatsuit", Fetish: ["Latex"], Value: -1, BuyGroup: "Catsuit", Hide: ["ItemVulvaPiercings"], 
+				HideItem: [
+					"SocksPantyhose1","ItemVulvaClitoralStimulator","ItemVulvaClitSuctionCup", "ItemVulvaClitAndDildoVibratorbelt", 
+					"ItemVulvaInflatableVibeDildo", "ItemVulvaShockDildo", "ItemVulvaVibratingDildo", "ItemVulvaHeavyWeightClamp"
+				] 
+			},
+			{ Name: "PilotSuit", Fetish: ["Latex"], Value: -1, BuyGroup: "PilotSuit", DefaultColor: ["#3270C1", "#2B408B", "#969696", "#282828"], Hide: ["ItemVulvaPiercings"], 
+				HideItem: [
+					"SocksPantyhose1","ItemVulvaClitoralStimulator","ItemVulvaClitSuctionCup", "ItemVulvaClitAndDildoVibratorbelt", 
+					"ItemVulvaInflatableVibeDildo", "ItemVulvaShockDildo", "ItemVulvaVibratingDildo", "ItemVulvaHeavyWeightClamp"
+				],
 				Layer: [
 					{ Name: "Layer1", AllowColorize: true },
 					{ Name: "Layer2", AllowColorize: true },
