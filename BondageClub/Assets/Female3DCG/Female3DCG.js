@@ -1055,6 +1055,20 @@ var AssetFemale3DCG = [
 	},
 
 	{
+		Group: "Wristband",
+        ParentGroup: "BodyUpper",
+        Priority: 46,
+        Default: false,
+        Left: 0,
+        Top: 0,
+        AllowPose: ["Yoked", "AllFours", "OverTheHead"],
+		Asset: [
+			{ Name: "temp",},
+		],
+		Color: ["Default", "#cccccc", "#aaaaaa", "#888888", "#666666", "#444444", "#222222", "#aa8080", "#80aa80", "#8080aa", "#aaaa80", "#80aaaa", "#aa80aa", "#cc3333", "#33cc33", "#3333cc", "#cccc33", "#33cccc", "#cc33cc"]
+	},
+
+	{
 		Group: "Glasses",
 		Priority: 27,
 		Default: false,
