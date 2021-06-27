@@ -1059,15 +1059,11 @@ var AssetFemale3DCG = [
         ParentGroup: "BodyUpper",
         Priority: 46,
         Default: false,
-        Left: 0,
-        Top: 0,
         AllowPose: ["TapedHands", "Yoked", "AllFours", "OverTheHead"],
 		Asset: [
-			{ Name: "BowBand", Value: 0,},
-			{ Name: "KinkBracelet", Value: 0,},
-			{ Name: "LesBand", Value: 0,},
-			{ Name: "", Value: 0,},
-			{ Name: "", Value: 0,},
+			{ Name: "BowBand", Value: 5,},
+			{ Name: "KinkBracelet", Value: 5,},
+			{ Name: "LesBand", Value: 5,},
 		],
 		Color: ["Default", "#cccccc", "#aaaaaa", "#888888", "#666666", "#444444", "#222222", "#aa8080", "#80aa80", "#8080aa", "#aaaa80", "#80aaaa", "#aa80aa", "#cc3333", "#33cc33", "#3333cc", "#cccc33", "#33cccc", "#cc33cc"]
 	},
