@@ -1055,7 +1055,7 @@ var AssetFemale3DCG = [
 	},
 
 	{
-		Group: "Wristband",
+		Group: "Bracelet",
         ParentGroup: "BodyUpper",
         Priority: 46,
         Default: false,
