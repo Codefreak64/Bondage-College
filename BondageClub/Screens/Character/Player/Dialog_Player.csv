@@ -387,9 +387,9 @@ CollegeTheater,,,Theater,,
 CollegeClass,,,College Classroom,,
 SchoolHallway,,,School Hallway,,
 HotelBedroom,,,Hotel Bedroom,,
-Yacht1,,,Yacht1
-Yacht2,,,Yacht2
-Yacht3,,,Yacht3
+Yacht1,,,Yacht Chill Room
+Yacht2,,,Yacht Main Hall
+Yacht3,,,Yacht Deck
 ExtendedItemUnlockBeforeChange,,,Remove locks before changing,,
 IntroductionMaidGreetings,,,"(As you enter the luxurious hallway, a maid comes to greet you.)  Welcome to the Bondage Club, is this your first visit?",,
 ServerMessageOfferStartTrial,,,"SourceCharacter is offering you to start a trial period as her submissive.  Click on her and manage your relationship to accept, don't do anything to refuse.",,
