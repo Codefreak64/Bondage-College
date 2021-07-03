@@ -1059,8 +1059,6 @@ var AssetFemale3DCG = [
         ParentGroup: "BodyUpper",
         Priority: 46,
         Default: false,
-		Left: 20,
-		Top: 200,
         AllowPose: ["TapedHands", "Yoked", "AllFours", "OverTheHead"],
 		Asset: [
 			{ Name: "BowBand", Value: 5,},
