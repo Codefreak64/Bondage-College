@@ -1059,7 +1059,7 @@ var AssetFemale3DCG = [
         ParentGroup: "BodyUpper",
         Priority: 46,
         Default: false,
-        AllowPose: ["TapedHands", "Yoked", "AllFours", "OverTheHead"],
+        AllowPose: ["TapedHands", "Yoked", "OverTheHead"],
 		PreviewZone: [125, 265, 250, 250],
 		Asset: [
 			{ Name: "BowBand", Value: 20,},
@@ -4633,7 +4633,7 @@ var PoseFemale3DCG = [
 		Name: "Hogtied",
 		Category: "BodyFull",
 		OverrideHeight: { Height: -575, Priority: 50 },
-		Hide: ["BodyLower", "Head", "Hands", "ClothLower", "Wings", "Gloves", "Panties", "Pussy", "ItemHands", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemFeet", "LeftAnklet", "RightAnklet"],
+		Hide: ["BodyLower", "Head", "Hands", "ClothLower", "Wings", "Gloves", "Panties", "Pussy", "ItemHands", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemFeet", "LeftAnklet", "RightAnklet", "Bracelet"],
 		MovePosition: [{ Group: "Socks", X: 0, Y: -400 }, { Group: "Shoes", X: 0, Y: -500 }, { Group: "ItemBoots", X: 0, Y: -500 }, { Group: "SuitLower", X: 0, Y: -380 }, { Group: "TailStraps", X: 0, Y: -300 }, { Group: "ItemButt", X: 0, Y: -300 }]
 	},
 	{
@@ -4645,19 +4645,20 @@ var PoseFemale3DCG = [
 		Name: "SuspensionHogtied",
 		Category: "BodyFull",
 		OverrideHeight: { Height: 0, Priority: 50 },
-		Hide: ["BodyLower", "Hands", "ClothLower", "Wings", "Gloves", "Panties", "Pussy", "ItemHands", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemFeet", "SuitLower", "ItemDevices", "LeftAnklet", "RightAnklet"]
+		Hide: ["BodyLower", "Hands", "ClothLower", "Wings", "Gloves", "Panties", "Pussy", "ItemHands", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemFeet", "SuitLower", "ItemDevices", "LeftAnklet", "RightAnklet", "Bracelet"]
 	},
 	{
 		Name: "AllFours",
 		Category: "BodyFull",
 		OverrideHeight: { Height: -560, Priority: 50 },
-		Hide: ["ItemFeet", "ClothLower", "SuitLower", "Nipples", "Pussy", "BodyLower", "Head", "Wings", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemBoots", "Suit", "Panties", "Bra", "Socks", "Shoes", "LeftAnklet", "RightAnklet", "Corset"],
+		Hide: ["ItemFeet", "ClothLower", "SuitLower", "Nipples", "Pussy", "BodyLower", "Head", "Wings", "ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemLegs", "ItemBoots", "Suit", "Panties", "Bra", "Socks", "Shoes", "LeftAnklet", "RightAnklet", "Corset", "Bracelet"],
 		MovePosition: [{ Group: "TailStraps", X: 0, Y: -300 }, { Group: "ItemButt", X: 0, Y: -300 }]
 	},
 	{
 		Name: "BackBoxTie",
 		Category: "BodyUpper",
 		AllowMenu: true,
+		Hide: ["Bracelet"],
 	},
 	{
 		Name: "LegsClosed",
@@ -4673,11 +4674,13 @@ var PoseFemale3DCG = [
 		Name: "BackElbowTouch",
 		Category: "BodyUpper",
 		AllowMenu: true,
+		Hide: ["Bracelet"],
 	},
 	{
 		Name: "BackCuffs",
 		Category: "BodyUpper",
 		AllowMenu: true,
+		Hide: ["Bracelet"],
 	},
 	{
 		Name: "TapedHands",
