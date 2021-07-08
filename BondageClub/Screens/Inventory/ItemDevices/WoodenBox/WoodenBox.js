@@ -1,3 +1,4 @@
+"use strict";
 const InventoryItemDevicesWoodenBoxMaxLength = 20;
 const InventoryItemDevicesWoodenBoxTextInputId = "InventoryItemDevicesWoodenBoxText";
 const InventoryItemDevicesWoodenBoxOpacityInputId = "InventoryItemDevicesWoodenBoxOpacity";
@@ -175,23 +176,23 @@ function InventoryItemDevicesWoodenBoxSetOpacity(property, opacity) {
  * Handles wooden box opacity changes. Refreshes the character locally
  * @returns {void} - Nothing
  */
-const InventoryItemDevicesWoodenBoxOpacityChange = CommonDebounce((C, item, opacity) => {
+const InventoryItemDevicesWoodenBoxOpacityChange = CommonLimitFunction((C, item, opacity) => {
 	item = DialogFocusItem || item;
 	item.Property.Opacity = Number(opacity);
-	CharacterRefresh(C, false);
-}, 100);
+	CharacterLoadCanvas(C);
+});
 
 /**
  * Handles wooden box text changes. Refreshes the character locally
  * @returns {void} - Nothing
  */
-const InventoryItemDevicesWoodenBoxTextChange = CommonDebounce((C, item, text) => {
+const InventoryItemDevicesWoodenBoxTextChange = CommonLimitFunction((C, item, text) => {
 	item = DialogFocusItem || item;
 	if (DynamicDrawTextRegex.test(text)) {
 		item.Property.Text = text.substring(0, InventoryItemDevicesWoodenBoxMaxLength);
-		CharacterRefresh(C, false);
+		CharacterLoadCanvas(C);
 	}
-}, 200);
+});
 
 /**
  * Fetches the current text input value, trimmed appropriately
@@ -221,8 +222,7 @@ function AssetsItemDevicesWoodenBoxAfterDraw({ C, A, X, Y, L, Property, drawCanv
 		const tmpCanvas = AnimationGenerateTempCanvas(C, A, width, height);
 		const ctx = tmpCanvas.getContext("2d");
 
-		let text = Property && Property.Text || "";
-		if (!DynamicDrawTextRegex.test(text)) text = "";
+		let text = Property && typeof Property.Text === "string" && DynamicDrawTextRegex.test(Property.Text) ? Property.Text : "";
 		text = text.substring(0, InventoryItemDevicesWoodenBoxMaxLength);
 
 		let from = [0, 1];

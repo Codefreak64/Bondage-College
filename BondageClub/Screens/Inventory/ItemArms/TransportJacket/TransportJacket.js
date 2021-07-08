@@ -74,7 +74,7 @@ function InventoryItemArmsTransportJacketClick() {
 		return ExtendedItemExit();
 	}
 
-	ExtendedItemClick(InventoryItemArmsTransportJacketOptions, false, 3);
+	ExtendedItemClick(InventoryItemArmsTransportJacketOptions, 3);
 }
 
 function InventoryItemArmsTransportJacketPublishAction(C, Option, PreviousOption) {
@@ -87,13 +87,13 @@ function InventoryItemArmsTransportJacketPublishAction(C, Option, PreviousOption
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
 
-const InventoryItemArmsTransportJacketTextChange = CommonDebounce((C, item, text) => {
+const InventoryItemArmsTransportJacketTextChange = CommonLimitFunction((C, item, text) => {
 	item = DialogFocusItem || item;
 	if (DynamicDrawTextRegex.test(text)) {
 		item.Property.Text = text.substring(0, InventoryItemDevicesWoodenBoxMaxLength);
-		CharacterRefresh(C, false);
+		CharacterLoadCanvas(C);
 	}
-}, 200);
+});
 
 function InventoryItemArmsTransportJacketExit() {
 	const C = CharacterGetCurrent();
@@ -128,8 +128,7 @@ function AssetsItemArmsTransportJacketAfterDraw({ C, A, X, Y, L, Pose, Property,
 		const flatCanvas = AnimationGenerateTempCanvas(C, A, width, height);
 		const flatCtx = flatCanvas.getContext("2d");
 
-		let text = Property && Property.Text || "";
-		if (!DynamicDrawTextRegex.test(text)) text = "";
+		let text = Property && typeof Property.Text === "string" && DynamicDrawTextRegex.test(Property.Text) ? Property.Text : "";
 		text = text.substring(0, InventoryItemArmsTransportJacketMaxLength);
 
 		DynamicDrawText(text, flatCtx, width / 2, height / 2, {

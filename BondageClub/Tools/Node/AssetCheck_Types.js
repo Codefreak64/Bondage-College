@@ -1,3 +1,4 @@
+"use strict";
 const AssetGroupType = {
 	Asset: "[Object | String]",
 	Group: "String",
@@ -32,7 +33,8 @@ const AssetGroupType = {
 	Blink: "Maybe Boolean",
 	InheritColor: "Maybe String",
 	FreezeActivePose: "Maybe [String]",
-
+	PreviewZone: "Maybe (Number, Number, Number, Number)",
+	DynamicGroupName: "Maybe String",
 };
 
 const AssetType = {
@@ -48,7 +50,7 @@ const AssetType = {
 	BuyGroup: "String",
 	PrerequisiteBuyGroups: "[String]",
 	Effect: "[String]",
-	Bonus: "[{ Factor: Number, Type: String }]",
+	Bonus: "String",
 	Block: "[String]",
 	Expose: "[String]",
 	Hide: "[String]",
@@ -58,7 +60,6 @@ const AssetType = {
 	SetPose: "[String]",
 	AllowPose: "[String]",
 	HideForPose: "[String]",
-	OverrideAllowPose: "[String]",
 	AllowActivePose: "[String]",
 	WhitelistActivePose: "[String]",
 	Value: "Number",
@@ -69,6 +70,7 @@ const AssetType = {
 	Random: "Boolean",
 	RemoveAtLogin: "Boolean",
 	Time: "Number",
+	LayerVisibility: "Boolean",
 	RemoveTime: "Number",
 	RemoveTimer: "Number",
 	MaxTimer: "Number",
@@ -105,7 +107,7 @@ const AssetType = {
 	OverrideBlinking: "Boolean",
 	DialogSortOverride: "Number",
 	// DynamicDescription: "Function",
-	// DynamicPreviewIcon: "Function",
+	// DynamicPreviewImage: "Function",
 	// DynamicAllowInventoryAdd: "Function",
 	// DynamicExpressionTrigger: "Function",
 	// DynamicName: "Function",
@@ -128,8 +130,14 @@ const AssetType = {
 	AllowExpression: "[String]",
 	MirrorExpression: "String",
 	FixedPosition: "Boolean",
-	Layer: "[Object]",
 	CustomBlindBackground: "Object",
+	Layer: "[Object]",
+	Archetype: "String",
+	FuturisticRecolor: "Boolean",
+	FuturisticRecolorDisplay: "Boolean",
+	Attribute: "[String]",
+	HideItemAttribute: "[String]",
+	PreviewIcons: "[String]",
 };
 
 const AssetLayerType = {
@@ -140,8 +148,9 @@ const AssetLayerType = {
 	HideColoring: "Boolean",
 	AllowTypes: "[String]",
 	HasType: "Boolean",
+	Visibility: "String",
 	ParentGroup: "Maybe String",
-	OverrideAllowPose: "[String]",
+	AllowPose: "[String]",
 	Priority: "Number",
 	InheritColor: "String",
 	Alpha: "[{ Group: Maybe [String], Pose: Maybe [String], Masks: [(Number, Number, Number, Number)] }]",
@@ -158,4 +167,65 @@ const AssetLayerType = {
 	AllowModuleTypes: "[String]",
 };
 
-module.exports = { AssetGroupType, AssetType, AssetLayerType };
+const ExtendedItemAssetConfig = {
+	Archetype: "String",
+	Config: "Maybe Object", // ModularItemConfig | TypedItemConfig
+	CopyConfig: "Maybe {GroupName: Maybe String, AssetName: String}",
+};
+
+const ModularItemConfig = {
+	Modules: "[Object]", // ModularItemModule[]
+	ChatSetting: "Maybe String",
+	ChangeWhenLocked: "Maybe Boolean",
+}
+
+const ModularItemModule = {
+	Name: "String",
+	Key: "String",
+	Options: "[Object]", // ModularItemOption[]
+}
+
+const ModularItemOption = {
+		Difficulty: "Maybe Number",
+		BondageLevel: "Maybe Number",
+		SelfBondageLevel: "Maybe Number",
+		Block: "Maybe [String]",
+		Hide: "Maybe [String]",
+		HideItem: "Maybe [String]",
+		Property: "Maybe Object",
+		ChangeWhenLocked: "Maybe Boolean",
+}
+
+const TypedItemConfig = {
+	Options: "[Object]", // ExtendedItemOption
+	Dialog: "Maybe { Load: Maybe String, TypePrefix: Maybe String, ChatPrefix: Maybe String, NpcPrefix: Maybe String }",
+	ChatTags: "Maybe [String]",
+	ChatSetting: "Maybe String",
+	DrawImages: "Maybe Boolean",
+	ChangeWhenLocked: "Maybe Boolean",
+	// Validate: "Maybe Function",
+}
+
+const ExtendedItemOption = {
+	Name: "String",
+	BondageLevel: "Maybe Number",
+	SelfBondageLevel: "Maybe Number",
+	Prerequisite: "Undefined | String | [String]",
+	SelfBlockCheck: "Maybe Boolean",
+	ChangeWhenLocked: "Maybe Boolean",
+	Property: "Maybe Object",
+	Expression: "Maybe [{ Name: String, Group: String, Timer: Number }]",
+	HasSubscreen: "Maybe Boolean",
+}
+
+module.exports = {
+	AssetGroupType,
+	AssetType,
+	AssetLayerType,
+	ExtendedItemAssetConfig,
+	ModularItemConfig,
+	ModularItemModule,
+	ModularItemOption,
+	TypedItemConfig,
+	ExtendedItemOption
+};

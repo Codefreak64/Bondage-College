@@ -14,68 +14,68 @@ var CafePrice = 0;
  * CHecks, if the player can be served
  * @returns {boolean} - Returns true, if the player can be served, false otherwise
  */
-function CafeMaidCanServe() { return (!CafeMaid.IsRestrained() && !Player.IsRestrained()) }
+function CafeMaidCanServe() { return (!CafeMaid.IsRestrained() && !Player.IsRestrained()); }
 
 /**
  * Checks, if the maid from the cafe can serve the player
  * @returns {boolean} - Returns true, if the maid is able to serve, false otherwise
  */
-function CafeMaidCannotServe() { return (CafeMaid.IsRestrained()) }
+function CafeMaidCannotServe() { return (CafeMaid.IsRestrained()); }
 
 /**
  * Checks, if the player is able to consume a dring
  * @returns {boolean} - Returns true, if player and maid are unrestrained, false otherwise
  */
-function CafePlayerCannotConsume() { return (!CafeMaid.IsRestrained() && Player.IsRestrained()) }
+function CafePlayerCannotConsume() { return (!CafeMaid.IsRestrained() && Player.IsRestrained()); }
 
 /**
  * CHecks, if the player has completed the only serving task
  * @returns {boolean} - Returns true, if the player is done, false otherwise
  */
-function CafeOnlineDrinkCompleted() { return (MaidQuartersOnlineDrinkCount >= 5) }
+function CafeOnlineDrinkCompleted() { return (MaidQuartersOnlineDrinkCount >= 5); }
 
 /**
  * Checks, if the player is a head maid and gagged
  * @returns {boolean} - Returns true, if the player is a head maid and gagged
  */
-function CafeIsGaggedHeadMaid() { return (!Player.CanTalk() && CafeIsHeadMaid && !Player.IsBlind()) }
+function CafeIsGaggedHeadMaid() { return (!Player.CanTalk() && CafeIsHeadMaid && !Player.IsBlind()); }
 
 /**
  * Checks if the player is gagged and an experienced maid (reputation higher than 50)
  * @returns {boolean} - Returns true, if the player is gagged and a senior maid, false otherwise
  */
-function CafeIsGaggedSeniorMaid() { return (!Player.CanTalk() && !CafeIsHeadMaid && ReputationGet("Maid") >= 50 && !Player.IsBlind()) }
+function CafeIsGaggedSeniorMaid() { return (!Player.CanTalk() && !CafeIsHeadMaid && ReputationGet("Maid") >= 50 && !Player.IsBlind()); }
 
 /**
  * Checks if the player is gagged and an ordinary maid
  * @returns {boolean} - Returns true if the player is gagged and an ordinary maid, false otherwise
  */
-function CafeIsGaggedMaid() { return (!Player.CanTalk() && !CafeIsHeadMaid && ReputationGet("Maid") > 50 && !Player.IsBlind()) }
+function CafeIsGaggedMaid() { return (!Player.CanTalk() && !CafeIsHeadMaid && ReputationGet("Maid") > 50 && !Player.IsBlind()); }
 
 /**
  * Checks if the player is an experinced maid, but no head maid
  * @returns {boolean} - Returns true, if the player is no head maid and has a reputation of more than 50, false otherwise
  */
-function CafeIsMaidChoice() { return (ReputationGet("Maid") >= 50 && !CafeIsHeadMaid) }
+function CafeIsMaidChoice() { return (ReputationGet("Maid") >= 50 && !CafeIsHeadMaid); }
 
 /**
  * Checks, if the player is an ordinary maid
  * @returns {boolean} - Returns true if the player is no head maid and has a reputation of less than 50
  */
-function CafeIsMaidNoChoice() { return (ReputationGet("Maid") < 50 && !CafeIsHeadMaid) }
+function CafeIsMaidNoChoice() { return (ReputationGet("Maid") < 50 && !CafeIsHeadMaid); }
 
 /**
  * Checks, if a dildo can be applied to the player
  * @returns {boolean} - Returns true, if a dildo can be applied, false otherwise
  */
-function CafeCanDildo() { return (!Player.IsVulvaChaste() && InventoryGet(Player, "ItemVulva") == null) }
+function CafeCanDildo() { return (!Player.IsVulvaChaste() && InventoryGet(Player, "ItemVulva") == null); }
 
 /**
  * Checks, if the player aked for a certain speciality
  * @param {string} Type - The type of cafe speciality
  * @returns {boolean} - Returns true, if the player asked for a given speciality, false otherwise
  */
-function CafeEquired(Type) { return (Type == CafeAskedFor) }
+function CafeEquired(Type) { return (Type == CafeAskedFor); }
 
 //
 /**
@@ -90,7 +90,7 @@ function CafeLoad() {
 }
 
 /**
- * Run the Cafe room and draw characters. This function is called dynamically at short intervals. 
+ * Run the Cafe room and draw characters. This function is called dynamically at short intervals.
  * Don't use expensive loops or functions from here
  * @returns {void} - Nothing
  */
@@ -147,7 +147,7 @@ function CafeConsumeSpeciiality() {
 	}
 	else {
 		CharacterChangeMoney(Player, CafePrice * -1);
-		if (!LogQuery("ModifierDuration", "SkillModifier")) LogAdd("ModifierLevel", "SkillModifier", 0)
+		if (!LogQuery("ModifierDuration", "SkillModifier")) LogAdd("ModifierLevel", "SkillModifier", 0);
 			SkillModifier = LogValue("ModifierLevel", "SkillModifier");
 
 		if (CafeAskedFor == "EnergyDrink") {
@@ -165,7 +165,7 @@ function CafeConsumeSpeciiality() {
 		}
 
 		if (CafeAskedFor == "Cupcake") {
-
+			// No effect
 		}
 	}
 }
@@ -183,7 +183,7 @@ function CafeServiceBound(Style) {
 	var Form = null;
 	var Option = null;
 
-	CharacterRelease(Player)
+	CharacterRelease(Player);
 
 	if (Style == "Shibari") {
 
@@ -206,10 +206,7 @@ function CafeServiceBound(Style) {
 
 		// Gag Sub Types
 		if (Bondage == "ClothGag") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemMouth");
-			DialogExtendItem(InventoryGet(Player, "ItemMouth"));
-			Option = CommonRandomItemFromList(null, InventoryItemMouthClothGagOptions);
-			ExtendedItemSetType(Player, InventoryItemMouthClothGagOptions, Option);
+			TypedItemSetRandomOption(Player, "ItemMouth");
 		}
 	}
 
@@ -229,10 +226,7 @@ function CafeServiceBound(Style) {
         ExtendedItemSetType(Player, InventoryItemLegsDuctTapeOptions, Option);
 
         // Gag Sub Type
-        Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemMouth");
-        DialogExtendItem(InventoryGet(Player, "ItemMouth"));
-        Option = CommonRandomItemFromList(null, InventoryItemMouthDuctTapeOptions);
-        ExtendedItemSetType(Player, InventoryItemMouthDuctTapeOptions, Option);
+		TypedItemSetRandomOption(Player, "ItemMouth");
 	}
 
 	if (Style == "Leather") {
@@ -247,10 +241,7 @@ function CafeServiceBound(Style) {
 		InventoryWear(Player, Bondage, "ItemArms", RandomColor, 15);
 
 		if (Bondage == "LeatherCuffs") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemArms");
-            DialogExtendItem(InventoryGet(Player, "ItemArms"));
-            Option = CommonRandomItemFromList(null, InventoryItemArmsLeatherCuffsOptions);
-            ExtendedItemSetType(Player, InventoryItemArmsLeatherCuffsOptions, Option);
+			TypedItemSetRandomOption(Player, "ItemArms");
 		}
 
 		// Legs
@@ -265,7 +256,8 @@ function CafeServiceBound(Style) {
 		if (Bondage == "LeatherLegCuffs") {
             Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemLegs");
 			DialogExtendItem(InventoryGet(Player, "ItemLegs"));
-			InventoryItemLegsLeatherLegCuffsSetPose("Closed");
+			const Option = InventoryItemLegsLeatherLegCuffsOptions.find(O => O.Name === "Closed");
+			ExtendedItemSetType(Player, InventoryItemLegsLeatherLegCuffsOptions, Option);
 		}
 
 		// Gag
@@ -313,16 +305,12 @@ function CafeServiceBound(Style) {
 		InventoryWear(Player, Bondage, "ItemMouth", RandomColor);
 
 		if (Bondage == "PumpGag") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemMouth");
-            DialogExtendItem(InventoryGet(Player, "ItemMouth"));
-            Option = CommonRandomItemFromList(null, InventoryItemMouthPumpGagOptions);
-            ExtendedItemSetType(Player, InventoryItemMouthPumpGagOptions, Option);
-            CharacterLoadEffect(Player);
+			TypedItemSetRandomOption(Player, "ItemMouth");
 		}
 	}
 
 	if (Style == "Heavy") {
-		
+
 		// Arms
 		RandomNumber = Math.floor(Math.random() * 4);
 		if (RandomNumber >= 0) Bondage = "LeatherArmbinder";
@@ -331,12 +319,9 @@ function CafeServiceBound(Style) {
 		if (RandomNumber >= 3) Bondage = "StraitDressOpen";
 		if (RandomNumber >= 2) RandomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
 		InventoryWear(Player, Bondage, "ItemArms", RandomColor, 20);
-		
+
 		if (Bondage == "StraitJacket") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemArms");
-			DialogExtendItem(InventoryGet(Player, "ItemArms"));
-			const Option = CommonRandomItemFromList(null, InventoryItemArmsStraitJacketOptions);
-			ExtendedItemSetType(Player, InventoryItemArmsStraitJacketOptions, Option);
+			TypedItemSetRandomOption(Player, "ItemArms");
 		}
 
 		// Legs
@@ -353,7 +338,8 @@ function CafeServiceBound(Style) {
 			if (Bondage == "LeatherLegCuffs") {
                 Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemLegs");
 				DialogExtendItem(InventoryGet(Player, "ItemLegs"));
-				InventoryItemLegsLeatherLegCuffsSetPose("Closed");
+				const Option = InventoryItemLegsLeatherLegCuffsOptions.find(O => O.Name === "Closed");
+				ExtendedItemSetType(Player, InventoryItemLegsLeatherLegCuffsOptions, Option);
 			}
 		}
 
@@ -369,18 +355,11 @@ function CafeServiceBound(Style) {
 		InventoryWear(Player, Bondage, "ItemMouth");
 
 		if (Bondage == "PumpGag") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemMouth");
-            DialogExtendItem(InventoryGet(Player, "ItemMouth"));
-            Option = CommonRandomItemFromList(null, InventoryItemMouthPumpGagOptions);
-            ExtendedItemSetType(Player, InventoryItemMouthPumpGagOptions, Option);
-            CharacterLoadEffect(Player);
+			TypedItemSetRandomOption(Player, "ItemMouth");
 		}
 
 		if (Bondage == "PlugGag") {
-            Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemMouth");
-			DialogExtendItem(InventoryGet(Player, "ItemMouth"));
-			Option = CommonRandomItemFromList(null, InventoryItemMouthPlugGagOptions);
-			ExtendedItemSetType(Player, InventoryItemMouthPlugGagOptions, Option);
+			TypedItemSetRandomOption(Player, "ItemMouth");
 		}
 
 		// Head
@@ -396,7 +375,7 @@ function CafeServiceBound(Style) {
 		if (RandomNumber >= 12) Bondage = "LeatherHoodSealed";
 		if (RandomNumber >= 8) InventoryWear(Player, Bondage, "ItemHood");
 		if (RandomNumber >= 4 && RandomNumber < 8) InventoryWear(Player, Bondage, "ItemHead");
-		
+
 		// Locks
 		InventoryFullLockRandom(Player);
 	}
@@ -423,7 +402,7 @@ function CafeRamdomBound() {
  */
 function CafeRefillTray() {
 	if (MaidQuartersOnlineDrinkCount >= 4) ReputationProgress("Maid", 4);								// bonus rep on refill if served enough
-	MaidQuartersOnlineDrinkValue = MaidQuartersOnlineDrinkValue + (MaidQuartersOnlineDrinkCount * 3)	// top up equiverlant to basic pay for serving a tray + a small bonus
+	MaidQuartersOnlineDrinkValue = MaidQuartersOnlineDrinkValue + (MaidQuartersOnlineDrinkCount * 3);	// top up equiverlant to basic pay for serving a tray + a small bonus
 	MaidQuartersOnlineDrinkCount = 0;																	// Refill try ready to serve again.
 	MaidQuartersOnlineDrinkCustomer = [];																// Allow serving the previous customers again.
 	InventoryWear(Player, "WoodenMaidTrayFull", "ItemMisc");											// Make sure tray is not empty.
@@ -443,6 +422,6 @@ function CafeGivenDildo() {
  */
 function CafeTurnDildoUp() {
 	DialogExtendItem(InventoryGet(Player, "ItemVulva"));
-	InventoryItemVulvaInflatableVibeDildoSetIntensity(1);
+	InventoryItemButtInflVibeButtPlugSetIntensity(1);
 	CafeVibeIncreased = true;
 }

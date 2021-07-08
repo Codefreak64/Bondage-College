@@ -1,3 +1,5 @@
+"use strict";
+/* eslint-disable */
 var ControllerButtonsX = [];//there probably is a way to use just one list, but i don't want to bother and this works anyway
 var ControllerButtonsY = [];
 var ControllerActive = true;
@@ -228,8 +230,8 @@ function ControllerButton(buttons) {
 				}
 
 				if (buttons[ControllerB].pressed == true) {
-					if (typeof window[CurrentScreen + "Exit"] === "function") {
-						window[CurrentScreen + "Exit"]();
+					if (CurrentScreenFunctions.Exit) {
+						CurrentScreenFunctions.Exit();
 					} else if ((CurrentCharacter != null) && Array.isArray(DialogMenuButton) && (DialogMenuButton.indexOf("Exit") >= 0)) {
 						if (!DialogLeaveFocusItem())
 							DialogLeaveItemMenu();

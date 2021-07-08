@@ -12,7 +12,21 @@ var InventoryItemHeadInteractiveVRHeadsetOptions = [
 		Name: "Virtual",
 		Property: {
 			Type: null,
-			Effect: ["BlindHeavy", "Prone"],
+			Effect: ["BlindHeavy", "Prone", "VRAvatars"],
+		},
+	},
+	{
+		Name: "FreeVR",
+		Property: {
+			Type: "FreeVR",
+			Effect: ["BlindHeavy", "VRAvatars", "HideRestraints"],
+		},
+	},
+	{
+		Name: "Gaming",
+		Property: {
+			Type: "Gaming",
+			Effect: ["BlindHeavy", "VRAvatars", "KinkyDungeonParty"],
 		},
 	},
 	{
@@ -25,9 +39,9 @@ var InventoryItemHeadInteractiveVRHeadsetOptions = [
 ];
 
 function InventoryItemHeadInteractiveVRHeadsetLoad() {
-	 var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
+	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
 	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
-		InventoryItemMouthFuturisticPanelGagLoadAccessDenied()
+		InventoryItemMouthFuturisticPanelGagLoadAccessDenied();
 	} else
 		ExtendedItemLoad(InventoryItemHeadInteractiveVRHeadsetOptions, "SelectHeadsetType");
 }
@@ -35,7 +49,7 @@ function InventoryItemHeadInteractiveVRHeadsetLoad() {
 function InventoryItemHeadInteractiveVRHeadsetDraw() {
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
 	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
-		InventoryItemMouthFuturisticPanelGagDrawAccessDenied()
+		InventoryItemMouthFuturisticPanelGagDrawAccessDenied();
 	} else
 		ExtendedItemDraw(InventoryItemHeadInteractiveVRHeadsetOptions, "InteractiveVRHeadsetHeadType");
 }
@@ -43,7 +57,7 @@ function InventoryItemHeadInteractiveVRHeadsetDraw() {
 function InventoryItemHeadInteractiveVRHeadsetClick() {
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
 	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
-		InventoryItemMouthFuturisticPanelGagClickAccessDenied()
+		InventoryItemMouthFuturisticPanelGagClickAccessDenied();
 	} else
 		ExtendedItemClick(InventoryItemHeadInteractiveVRHeadsetOptions);
 }
@@ -60,11 +74,11 @@ function InventoryItemHeadInteractiveVRHeadsetPublishAction(C, Option) {
 
 
 function InventoryItemHeadInteractiveVRHeadsetExit() {
-	InventoryItemMouthFuturisticPanelGagExitAccessDenied()
+	InventoryItemMouthFuturisticPanelGagExitAccessDenied();
 }
 
-function InventoryItemHeadInteractiveVRHeadsetValidate(C, Option) {
-	return InventoryItemMouthFuturisticPanelGagValidate(C, Option); // All futuristic items refer to the gag
+function InventoryItemHeadInteractiveVRHeadsetValidate(C, Item) {
+	return InventoryItemMouthFuturisticPanelGagValidate(C, Item); // All futuristic items refer to the gag
 }
 
 function InventoryItemHeadInteractiveVRHeadsetNpcDialog(C, Option) {

@@ -19,8 +19,8 @@ function InventoryItemMouthFuturisticHarnessPanelGagExit() {
 	InventoryItemMouthFuturisticPanelGagExit();
 }
 
-function InventoryItemMouthFuturisticHarnessPanelGagValidate(C, Option) {
-	return InventoryItemMouthFuturisticPanelGagValidate(C, Option);
+function InventoryItemMouthFuturisticHarnessPanelGagValidate(C, Item) {
+	return InventoryItemMouthFuturisticPanelGagValidate(C, Item);
 }
 
 
@@ -34,8 +34,8 @@ function InventoryItemMouthFuturisticHarnessPanelNpcDialog(C, Option) {
 
 
 function AssetsItemMouthFuturisticHarnessPanelGagScriptDraw(data) {
-	AssetsItemMouthFuturisticPanelGagScriptDraw(data)
+	AssetsItemMouthFuturisticPanelGagScriptDraw(data);
 }
 function AssetsItemMouthFuturisticHarnessPanelGagBeforeDraw(data) {
-	return AssetsItemMouthFuturisticPanelGagBeforeDraw(data)
+	return AssetsItemMouthFuturisticPanelGagBeforeDraw(data);
 }

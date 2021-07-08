@@ -124,7 +124,7 @@ function ElementCreateRangeInput(id, value, min, max, step, thumbIcon, vertical)
  * - Multiple selects are impossible
  * @param {string} ID - The name of the select item. The outer div will get this name, for positioning. The select
  * tag will get the name ID+"-select"
- * @param {atring[]} Options - The list of options for the current select statement
+ * @param {string[]} Options - The list of options for the current select statement
  * @param {function} [ClickEventListener=null] - An event listener to be called, when the value of the drop down box changes
  * @returns {void} - Nothing
  */
@@ -149,7 +149,7 @@ function ElementCreateDropdown(ID, Options, ClickEventListener) {
 			Option.setAttribute("value", Options[i]);
 			Option.innerHTML = Options[i];
 			InnerDiv.innerHTML = Options[i];
-			InnerDiv.addEventListener("click", function (e) {
+			InnerDiv.addEventListener("click", function () {
 				// when an item is clicked, update the original select box, and the selected item:
 				var s = this.parentNode.parentNode.getElementsByTagName("select")[0]; // Representation of the select tag
 				var h = this.parentNode.previousSibling; // Representation of the dropdown box
@@ -182,7 +182,7 @@ function ElementCreateDropdown(ID, Options, ClickEventListener) {
 			this.nextSibling.classList.toggle("select-hide");
 		});
 		// add an event listener to the <select> tag
-		if (ClickEventListener != null) Select.addEventListener("change", ClickEventListener)
+		if (ClickEventListener != null) Select.addEventListener("change", ClickEventListener);
 		// Add alle the items to the enclosing <di>
 		CustomSelect.appendChild(Select);
 		CustomSelect.appendChild(SelectedItem);
@@ -198,8 +198,8 @@ function ElementCreateDropdown(ID, Options, ClickEventListener) {
  * @returns {void} - Nothing
  */
 function ElementCloseAllSelect(elmnt) {
-    /*a function that will close all select boxes in the document,
-    except the current select box:*/
+	/*a function that will close all select boxes in the document,
+	except the current select box:*/
 	var arrNo = [];
 	var y = document.getElementsByClassName("select-selected");
 	for (let i = 0; i < y.length; i++) {
@@ -243,7 +243,7 @@ function ElementRemove(ID) {
  * @param {number} X - Center point of the element on the X axis.
  * @param {number} Y - Center point of the element on the Y axis.
  * @param {number} W - Width of the element.
- * @param {number} H - Height of the element.
+ * @param {number} [H] - Height of the element.
  * @returns {void} - Nothing
  */
 function ElementPosition(ElementID, X, Y, W, H) {
@@ -293,6 +293,12 @@ function ElementPosition(ElementID, X, Y, W, H) {
  * @returns {void} - Nothing
  */
 function ElementPositionFix(ElementID, Font, X, Y, W, H) {
+	var E = document.getElementById(ElementID);
+	// Verify the element exists
+	if (!E) {
+		console.warn("A call to ElementPositionFix was made on non-existent element with ID '" + ElementID + "'");
+		return;
+	}
 
 	// Different positions based on the width/height ratio
 	const HRatio = MainCanvas.canvas.clientHeight / 1000;
@@ -304,7 +310,6 @@ function ElementPositionFix(ElementID, Font, X, Y, W, H) {
 	const Width = W * WRatio;
 
 	// Sets the element style
-	var E = document.getElementById(ElementID);
 	Object.assign(E.style, {
 		fontSize: Font + "px",
 		fontFamily: CommonGetFontName(),
@@ -343,13 +348,26 @@ function ElementScrollToEnd(ID) {
 }
 
 /**
+ * Returns the given element's scroll position as a percentage, with the top of the element being close to 0 depending on scroll bar size, and the bottom being around 1.
+ * To clarify, this is the position of the bottom edge of the scroll bar.
+ * @param {string} ID - The id of the element to find the scroll percentage of.
+ * @returns {(number|null)} - A float representing the scroll percentage.
+ */
+function ElementGetScrollPercentage(ID) {
+	var element = document.getElementById(ID);
+	if (element != null) return (element.scrollTop + element.clientHeight) / element.scrollHeight;
+
+	return null;
+}
+
+/**
  * Checks if a given HTML element is scrolled to the very bottom.
  * @param {string} ID - The id of the element to check for scroll height.
  * @returns {boolean} - Returns TRUE if the specified element is scrolled to the very bottom
  */
 function ElementIsScrolledToEnd(ID) {
 	var element = document.getElementById(ID);
-	return element != null && element.scrollHeight - element.scrollTop - element.clientHeight < 1
+	return element != null && element.scrollHeight - element.scrollTop - element.clientHeight < 1;
 }
 
 /**

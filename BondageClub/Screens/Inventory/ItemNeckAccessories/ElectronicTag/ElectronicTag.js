@@ -3,7 +3,7 @@
 function InventoryItemNeckAccessoriesElectronicTagLoad() {
     var C = CharacterGetCurrent();
 	var MustRefresh = false;
-	
+
 	if (DialogFocusItem.Property == null) DialogFocusItem.Property = {};
 	if (DialogFocusItem.Property.Text == null) {
 		DialogFocusItem.Property.Text = "Tag";
@@ -13,7 +13,7 @@ function InventoryItemNeckAccessoriesElectronicTagLoad() {
 		CharacterRefresh(C);
 		ChatRoomCharacterItemUpdate(C, DialogFocusItem.Asset.Group.Name);
 	}
-	
+
 	// Only create the inputs if the item isn't locked
 	if (!InventoryItemHasEffect(DialogFocusItem, "Lock", true)) {
 		ElementCreateInput("TagText", "text", DialogFocusItem.Property.Text, "9");
@@ -37,7 +37,7 @@ function InventoryItemNeckAccessoriesElectronicTagDraw() {
 
 // Catches the item extension clicks
 function InventoryItemNeckAccessoriesElectronicTagClick() {
-	
+
 	if (!InventoryItemHasEffect(DialogFocusItem, "Lock", true)) {
 		// Change values if they are different and the tag is not locked
 		if ((MouseX >= 1500) && (MouseX <= 1850)) {
@@ -63,7 +63,7 @@ function InventoryItemNeckAccessoriesElectronicTagExit() {
 }
 
 // When the tag is changed
-function InventoryItemNeckAccessoriesElectronicTagChange() { 
+function InventoryItemNeckAccessoriesElectronicTagChange() {
     var C = CharacterGetCurrent();
     CharacterRefresh(C);
     if (CurrentScreen == "ChatRoom") {
@@ -77,21 +77,23 @@ function InventoryItemNeckAccessoriesElectronicTagChange() {
 
 // Drawing function for the text on the tag
 function AssetsItemNeckAccessoriesElectronicTagAfterDraw({
-    C, A, X, Y, Property, drawCanvas, drawCanvasBlink, AlphaMasks, L, Color
-}) { 
+	C, A, X, Y, Property, drawCanvas, drawCanvasBlink, AlphaMasks, L, Color
+}) {
 	if (L === "_Text") {
 		// We set up a canvas
 		const Height = 50;
 		const Width = 45;
 		const TempCanvas = AnimationGenerateTempCanvas(C, A, Width, Height);
-    
+
+		const text = Property && typeof Property.Text === "string" && InventoryItemNeckAccessoriesCustomCollarTagAllowedChars.test(Property.Text) ? Property.Text : "Tag";
+
 		// We draw the desired info on that canvas
 		let context = TempCanvas.getContext('2d');
 		context.font = "14px sansserif";
 		context.fillStyle = Color;
 		context.textAlign = "center";
-		context.fillText((Property && Property.Text.match(InventoryItemNeckAccessoriesCustomCollarTagAllowedChars) ? Property.Text : "Tag"), Width / 2, Width / 2, Width);
-    
+		context.fillText(text, Width / 2, Width / 2, Width);
+
 		// We print the canvas to the character based on the asset position
 		drawCanvas(TempCanvas, X + 228.5, Y + 30, AlphaMasks);
 		drawCanvasBlink(TempCanvas, X + 228.5, Y + 30, AlphaMasks);
