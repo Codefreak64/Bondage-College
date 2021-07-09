@@ -284,8 +284,8 @@ function InventoryItemPelvisFuturisticTrainingBeltPublishGeneric(C, msg) {
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
 
-function InventoryItemPelvisFuturisticTrainingBeltValidate(C) {
-	return InventoryItemMouthFuturisticPanelGagValidate(C, Option); // All futuristic items refer to the gag
+function InventoryItemPelvisFuturisticTrainingBeltValidate(C, Item) {
+	return InventoryItemMouthFuturisticPanelGagValidate(C, Item); // All futuristic items refer to the gag
 }
 
 /*
@@ -365,7 +365,7 @@ function InventoryItemPelvisFuturisticTrainingBeltUpdateVibeMode(C, Item, Force)
 			Dictionary.push({ Tag: "SourceCharacter", Text: C.Name, MemberNumber: Player.MemberNumber });
 			// This is meant to cut down on spam for other players
 			if (FuturisticTrainingBeltStates[Item.Property.DeviceState].includes("Edge") && (OldIntensity >= 0 && OldIntensity < 3))
-				ChatRoomMessage({ Content: Message+"Self", Type: "Action", Sender: Player.MemberNumber });
+				ChatRoomMessage({ Content: Message+"Self", Type: "Action", Sender: Player.MemberNumber, Dictionary: Dictionary  });
 			else {
 				if (Item.Property && Item.Property.ChatMessage) {
 					Dictionary.push({ Automatic: true });
@@ -389,8 +389,16 @@ function InventoryItemPelvisFuturisticTrainingBeltUpdateVibeMode(C, Item, Force)
 function InventoryFuturisticTrainingBeltCheckPunishSpeech(Item, LastTime) {
 	if (!Item) return "";
 	if (!Item.Property) return "";
-	for (let CH = 0; CH < ChatRoomChatLog.length; CH++) {
-		if (ChatRoomChatLog[CH].Time > LastTime && ChatRoomChatLog[CH].SenderMemberNumber == Player.MemberNumber) {
+	// Search from latest message backwards, allowing early exit
+	for (let CH = ChatRoomChatLog.length - 1; CH >= 0; CH--) {
+
+		// Messages are in order, no need to keep looping
+		if (ChatRoomChatLog[CH].Time <= LastTime) break
+
+		// If the message is OOC, just return immediately
+		if (ChatRoomChatLog[CH].Chat.indexOf('(') == 0) return "";
+
+		if (ChatRoomChatLog[CH].SenderMemberNumber == Player.MemberNumber) {
 			let msg = ChatRoomChatLog[CH].Chat.toUpperCase().replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, " ");
 			let msgTruncated = ChatRoomChatLog[CH].Chat.toUpperCase().replace(/[^a-z0-9]/gmi, "").replace(/\s+/g, "");
 
@@ -512,28 +520,34 @@ function AssetsItemPelvisFuturisticTrainingBeltScriptStateMachine(data) {
 			Property.DeviceState = FuturisticTrainingBeltStates.indexOf("None"); // None
 			update = true;
 		} else if (Mode == "EdgeAndDeny") {
-			DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityEdge");
+			if (State != "Cooldown")
+				DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityEdge");
 			if (ArousalActive && C.ArousalSettings.Progress > 90) {
 				if (Math.random() < FuturisticTrainingBeltRandomDenyChance) {
 					DeviceSetToState = FuturisticTrainingBeltStates.indexOf("Cooldown");
-					Property.DeviceStateTimer = CommonTime();
+					Property.DeviceStateTimer = CommonTime() + FuturisticTrainingBeltRandomDenyDuration;
 					update = true;
 				}
 			}
 			
 		} else if (Mode == "RandomTeasing") {
-			DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityTease");
+			if (State != "LowPriorityTease")
+				DeviceSetToState = 0;
 			if (State == "None") {
 				if (Math.random() < FuturisticTrainingBeltRandomTeaseChance) {
 					const r = Math.random();
+					DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityTease");
 					DeviceTimer = FuturisticTrainingBeltRandomTeaseDurationMin + (FuturisticTrainingBeltRandomTeaseDurationMax - FuturisticTrainingBeltRandomTeaseDurationMin) * r * r * r;
-				} else DeviceSetToState = -1;
+				}
 			} else DeviceTimer = 1;
 		} else if (Mode == "RandomOrgasm") {
-			DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityMax");
+			if (State != "LowPriorityMax")
+				DeviceSetToState = 0;
+			
 			if (State == "None") {
 				if (Math.random() < FuturisticTrainingBeltRandomOrgasmChance) {
 					const r = Math.random();
+					DeviceSetToState = FuturisticTrainingBeltStates.indexOf("LowPriorityMax");
 					DeviceTimer = FuturisticTrainingBeltRandomOrgasmDurationMin + (FuturisticTrainingBeltRandomOrgasmDurationMax - FuturisticTrainingBeltRandomOrgasmDurationMin) * r * r * r;
 				} else DeviceSetToState = -1;
 			} else DeviceTimer = 1;
@@ -586,27 +600,45 @@ function AssetsItemPelvisFuturisticTrainingBeltScriptStateMachine(data) {
 	
 	if (update || State.includes("Edge")) InventoryItemPelvisFuturisticTrainingBeltUpdateVibeMode(C, Item);
 	
-	var EdgeMode = State.includes("Edge") || Mode == "EdgeAndDeny" || Mode == "RandomTeasing";
+	let EdgeMode = State.includes("Edge") || Mode == "EdgeAndDeny" || Mode == "RandomTeasing";
 	
-	if (ArousalActive) {
-		if (EdgeMode && C.ArousalSettings.Progress > 96 && !((ActivityOrgasmGameTimer != null) && (ActivityOrgasmGameTimer > 0) && (CurrentTime < C.ArousalSettings.OrgasmTimer))) { // Manually trigger orgasm at this stage 
-			ActivityOrgasmPrepare(C, true);
-		}
-	}
 	
 	if (EdgeMode) {
-		if (!Item.Property.Effect && Item.Property.Effect.includes("DenialMode")) {
+		if (Item.Property.Effect && !Item.Property.Effect.includes("DenialMode")) {
 			Item.Property.Effect.push("DenialMode");
+		}
+		if (Item.Property.Effect && !Item.Property.Effect.includes("RuinOrgasms")) {
+			Item.Property.Effect.push("RuinOrgasms");
 		}
 	} else {
 		if (Item.Property.Effect && Item.Property.Effect.includes("DenialMode")) {
 			for (let E = 0; E < Item.Property.Effect.length; E++) {
-				var Effect = Item.Property.Effect[E];
+				let Effect = Item.Property.Effect[E];
 				if (Effect == "DenialMode") {
 					Item.Property.Effect.splice(E, 1);
 					E--;
 				}
 			}
+		}
+		if (Item.Property.Effect && Item.Property.Effect.includes("RuinOrgasms")) {
+			for (let E = 0; E < Item.Property.Effect.length; E++) {
+				let Effect = Item.Property.Effect[E];
+				if (Effect == "RuinOrgasms") {
+					Item.Property.Effect.splice(E, 1);
+					E--;
+				}
+			}
+		}
+	}
+	
+	
+	
+	if (ArousalActive) {
+		if (EdgeMode && C.ArousalSettings.Progress > 96 && !((ActivityOrgasmGameTimer != null) && (ActivityOrgasmGameTimer > 0) && (CurrentTime < C.ArousalSettings.OrgasmTimer))) { // Manually trigger orgasm at this stage 
+			ActivityOrgasmPrepare(C, true);
+			// Continuous edging~
+			if (Mode == "EdgeAndDeny")
+				C.ArousalSettings.Progress = 80;
 		}
 	}
 }
@@ -617,12 +649,12 @@ function AssetsItemPelvisFuturisticTrainingBeltScriptDraw(data) {
 	var property = (data.Item.Property = data.Item.Property || {});
 	if (typeof persistentData.UpdateTime !== "number") persistentData.UpdateTime = CommonTime() + 4000;
 	if (typeof persistentData.LastMessageLen !== "number") persistentData.LastMessageLen = (ChatRoomLastMessage) ? ChatRoomLastMessage.length : 0;
-	if (typeof persistentData.CheckTime !== "number") persistentData.CheckTime = CommonTime() + FuturisticVibratorCheckChatTime;
+	if (typeof persistentData.CheckTime !== "number") persistentData.CheckTime = 0;
 
 	if (persistentData.UpdateTime < CommonTime() && data.C == Player) {
 
 		if (CommonTime() > property.NextShockTime) {
-			AssetsItemPelvisFuturisticTrainingBeltScriptUpdatePlayer(data, persistentData.CheckTime - FuturisticVibratorCheckChatTime);
+			AssetsItemPelvisFuturisticTrainingBeltScriptUpdatePlayer(data, persistentData.CheckTime);
 			AssetsItemPelvisFuturisticTrainingBeltScriptStateMachine(data);
 			persistentData.LastMessageLen = (ChatRoomLastMessage) ? ChatRoomLastMessage.length : 0;
 		}
@@ -632,7 +664,8 @@ function AssetsItemPelvisFuturisticTrainingBeltScriptDraw(data) {
 		AnimationRequestRefreshRate(data.C, 5000 - timeToNextRefresh);
 		AnimationRequestDraw(data.C);
 		
-		
-		persistentData.CheckTime = CommonTime() + FuturisticVibratorCheckChatTime;
+		// Set CheckTime to last processed chat message time
+		var lastMsgIndex = ChatRoomChatLog.length - 1;
+		persistentData.CheckTime = (lastMsgIndex >= 0 ? ChatRoomChatLog[lastMsgIndex].Time : 0);
 	}
 }
